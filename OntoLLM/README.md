@@ -84,15 +84,13 @@ Managing different leave policies for Engineering vs HR departments to ensure ac
 
 #### Key Relationships:
 
-Well → hasBlock → Block 
-Well → hasArea → Area 
-Well → hasLease → Lease 
-Well → hasRegion → Region 
+
+Region → hasArea → Area 
+Area → hasBlock → Block
+Block → hasWell → Well 
+Block → hasLease → Lease 
 Block → hasExplorationPlan → ExplorationPlan 
 ExplorationPlan → hasQuestions → Question 
-Block → hasArea → Area 
-Block → hasLease → Lease 
-Area → hasRegion → Region 
 Question → related → Question
 
 
