@@ -1,0 +1,50 @@
+Given the following ontology structure:
+
+{
+    "nodes": {
+      "Motor": {
+        "MotorName": "Text"
+      },
+      "Model": {
+        "ModelName": "Text"
+      },
+      "Location": {
+        "LocationName": "Text"
+      },
+      "Phase": {
+        "PhaseName": "Text"
+      },
+      "Manual": {
+        "ManualName": "Text"
+      },
+      "Question": {
+        "ChunkVectorID": "Numeric",
+        "ChunkQuestion": "Text"
+      }
+    },
+    "relationtrees": {
+      "relations": [
+        "(MT:MOTOR)-[hm:hasModel]-(MD:Model)",
+        "(MT:MOTOR)-[hl:hasLocation]-(LC:Location)",
+        "(MT:MOTOR)-[hm:hasModel]-(MD:Model)-[hp:hasPhase]-(P:Phase)",
+        "(MT:MOTOR)-[hm:hasModel]-(MD:Model)-[hm:hasManual]-(M:Manual)",
+        "(MT:MOTOR)-[hm:hasModel]-(MD:Model)-[hm:hasManual]-(M:Manual)-
+        [hq:hasQuestions]-(C:Question)",
+        "(C:Question)-[r:related]-(Q:Question)"
+      ]
+    }
+    }
+Generate KG query to find vector references.
+
+Examples:
+Context: "Model.ModelName='#ent1'"
+KG Query for Refs: "MATCH (m:Motor)-[:hasModel]->(md:Model {ModelName: '#ent1'})
+-[:hasManual]->(man:Manual)-[:hasQuestions]->(q:Question) RETURN q.ChunkVectorID"
+
+Context: "Location.LocationName='#ent1'"
+KG Query for Refs: "(MT:MOTOR)-[hl:hasLocation]-(LC:Location:'#ent1') WITH MT,LC 
+(MT:MOTOR)-[hm:hasModel]-(MD:Model)-[hm:hasManual]-(M:Manual)-[hq:hasQuestions]
+-(C:Question) RETURN q.ChunkVectorID"
+
+
+Find KG Query for Refs for: "Motor.ModelName='Y200'"

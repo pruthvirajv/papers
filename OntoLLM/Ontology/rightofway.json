@@ -1,0 +1,31 @@
+{
+    "nodes": {
+      "Region": {
+        "RegionName": "Text"
+      },
+      "Segment": {
+        "SegmentNumber": "Text"
+      },
+      "Type": {
+        "TypeName": "Text"
+      },
+      "ROW": {
+        "ROWNumber": "Text",
+        "DocDate": "Date",
+        "ImportedDate": "Date"
+      },
+      "Question": {
+        "ChunkVectorRefID": "Numeric",
+        "ChunkQuestion": "Text"
+      }
+    },
+    "relationtrees": {
+      "relations": [
+        "(RG:REGION)-[hs:hasSegment]-(SG:Segment)",
+        "(SG:Segment)-[hr:hasROW]-(RW:ROW)",
+        "(RW:ROW)-[ht:hasType]-(TP:Type)",
+        "(SG:Segment)-[hr:hasROW]-(RW:ROW)-[hq:hasQuestions]-(Q:Question)",
+        "(Q:Question)-[r:related]-(Q2:Question)"
+      ]
+    }
+}

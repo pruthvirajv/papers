@@ -1,0 +1,52 @@
+In our experiments, we utilized a specific prompt setup for the Query Prompt Construction (Algorithm \ref{alg:prompt-creation}).
+
+The prompt for motor ontology:
+
+\begin{verbatim}
+Given the following ontology structure:
+
+{
+        "nodes": {
+          "Motor": {
+            "MotorName": "Text"
+          },
+          "Model": {
+            "ModelName": "Text"
+          },
+          "Location": {
+            "LocationName": "Text"
+          },
+          "Phase": {
+            "PhaseName": "Text"
+          },
+          "Manual": {
+            "ManualName": "Text"
+          },
+          "Question": {
+            "ChunkVectorID": "Numeric",
+            "ChunkQuestion": "Text"
+          }
+        },
+        "relationtrees": {
+          "relations": [
+            "(MT:MOTOR)-[hm:hasModel]-(MD:Model)",
+            "(MT:MOTOR)-[hl:hasLocation]-(LC:Location)",
+            "(MT:MOTOR)-[hm:hasModel]-(MD:Model)-[hp:hasPhase]-(P:Phase)",
+            "(MT:MOTOR)-[hm:hasModel]-(MD:Model)-[hm:hasManual]-(M:Manual)",
+            "(MT:MOTOR)-[hm:hasModel]-(MD:Model)-[hm:hasManual]-(M:Manual)
+            -[hq:hasQuestions]-(C:Question)",
+            "(C:Question)-[r:related]-(Q:Question)"
+          ]
+        }
+    }
+Here are some example queries:
+
+Natural Query: "What are the installation steps for motor model name #ent1?"
+KG Query: "MATCH (m:Motor)-[:hasModel]->(md:Model {ModelName: '#ent1'})-[:hasManual]->
+(man:Manual)-[:hasQuestions]->(q:Question) RETURN q.ChunkQuestion"
+
+Natural Query: "Where is motor #ent1 located?"
+KG Query: "MATCH (m:Motor {MotorName: '#ent1'})-[:hasLocation]->(loc:Location) 
+RETURN loc.LocationName"
+
+Generate a KG query for: "What is the phase type of model Y200?"

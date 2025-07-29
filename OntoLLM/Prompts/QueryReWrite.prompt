@@ -1,0 +1,16 @@
+Given the conversation context and current query, generate a clear, contextually complete query.
+
+Context:
+<conversation context>
+
+Current query:
+<user query>
+
+Examples:
+Context: "What are the installation steps for Y200."
+Query: "How about X100?"
+Rewritten query: "What are the steps for installing motor X100?"
+
+Context: "Can you tell me about the leave policy for HR?"
+Query: "I wanted to know for refinery engineers?"
+Rewritten query: "What is the leave policy for refinery engineers?"

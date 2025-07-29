@@ -1,1 +1,33 @@
-NO
+{
+    "nodes": {
+      "Employee": {
+        "EmployeeName": "Text"
+      },
+      "Role": {
+        "RoleName": "Text"
+      },
+      "Type": {
+        "TypeName": "Text"
+      },
+      "Department": {
+        "DepartmentName": "Text"
+      },
+      "Policy": {
+        "PolicyName": "Text"
+      },
+      "Question": {
+        "ChunkVectorRefID": "Numeric",
+        "ChunkQuestion": "Text"
+      }
+    },
+    "relationtrees": {
+      "relations": [
+        "(EM:EMPLOYEE)-[hem:hasRole]-(RL:Role)",
+        "(EM:EMPLOYEE)-[ht:hasType]-(TP:Type)",
+        "(EM:EMPLOYEE)-[hd:hasDepartment]-(DP:Department)",
+        "(EM:EMPLOYEE)-[hd:hasDepartment]-(DP:Department)-[hp:hasPolicy]-(PL:Policy)",
+        "(EM:EMPLOYEE)-[hd:hasDepartment]-(DP:Department)-[hp:hasPolicy]-(PL:Policy)-[hq:hasQuestion]-(CH:Question)",
+        "(CH:Question)-[r:related]-(Q:Question)"
+      ]
+    }
+  }

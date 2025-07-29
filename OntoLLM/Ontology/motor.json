@@ -1,0 +1,33 @@
+{
+    "nodes": {
+      "Motor": {
+        "MotorName": "Text"
+      },
+      "Model": {
+        "ModelName": "Text"
+      },
+      "Location": {
+        "LocationName": "Text"
+      },
+      "Phase": {
+        "PhaseName": "Text"
+      },
+      "Manual": {
+        "ManualName": "Text"
+      },
+      "Question": {
+        "ChunkVectorRefID": "Numeric",
+        "ChunkQuestion": "Text"
+      }
+    },
+    "relationtrees": {
+      "relations": [
+        "(MT:MOTOR)-[hm:hasModel]-(MD:Model)",
+        "(MT:MOTOR)-[hl:hasLocation]-(LC:Location)",
+        "(MT:MOTOR)-[hm:hasModel]-(MD:Model)-[hp:hasPhase]-(P:Phase)",
+        "(MT:MOTOR)-[hm:hasModel]-(MD:Model)-[hm:hasManual]-(M:Manual)",
+        "(MT:MOTOR)-[hm:hasModel]-(MD:Model)-[hm:hasManual]-(M:Manual)-[hq:hasQuestions]-(C:Question)",
+        "(C:Question)-[r:related]-(Q:Question)"
+      ]
+    }
+  }

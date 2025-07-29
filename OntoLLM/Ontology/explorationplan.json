@@ -1,0 +1,39 @@
+{
+    "nodes": {
+      "Well": {
+        "WellName": "Text"
+      },
+      "Block": {
+        "BlockNumber": "Text"
+      },
+      "Area": {
+        "AreaName": "Text"
+      },
+      "Lease": {
+        "LeaseNumber": "Text"
+      },
+      "Region": {
+        "RegionName": "Text"
+      },
+      "ExplorationPlan": {
+        "ControlNumber": "Text",
+        "Type": "Text",
+        "DateReceived": "Date"
+      },
+      "Question": {
+        "ChunkVectorRefID": "Numeric",
+        "ChunkQuestion": "Text"
+      }
+    },
+    "relationtrees": {
+      "relations": [
+        "(RG:REGION)-[ha:hasArea]-(AR:Area)",
+        "(AR:Area)-[hb:hasBlock]-(BL:Block)",
+        "(BL:Block)-[hw:hasWell]-(WL:Well)",
+        "(BL:Block)-[hl:hasLease]-(LS:Lease)",
+        "(BL:Block)-[hep:hasExplorationPlan]-(EP:ExplorationPlan)",
+        "(EP:ExplorationPlan)-[hq:hasQuestions]-(Q:Question)",
+        "(Q:Question)-[r:related]-(Q2:Question)"
+      ]      
+    }
+}
