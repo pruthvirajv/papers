@@ -2,10 +2,6 @@
 
 This directory contains the prompt templates used by the OntoLLM framework for various language model interactions. These prompts are designed to enable effective ontology-guided query generation, context management, and information retrieval in industrial conversational AI applications.
 
-## Overview
-
-The OntoLLM framework uses structured prompts to guide large language models in generating accurate queries, rewriting user inputs for better context, and retrieving relevant information from knowledge graphs and vector databases. Each prompt template is carefully crafted to incorporate domain-specific ontological knowledge and maintain conversational coherence.
-
 ## Prompt Files
 
 ### 1. Query Rewrite Prompt (`QueryReWrite.prompt`)
@@ -19,7 +15,7 @@ The OntoLLM framework uses structured prompts to guide large language models in 
 - **Context Integration**: Incorporates previous conversation turns
 - **Coreference Resolution**: Resolves pronouns and implicit references
 - **Query Completion**: Generates self-contained queries for better retrieval
-- **Domain Awareness**: Uses industrial examples (motor models, policies)
+- **Domain Awareness**: Uses [industrial ontology](../Ontology/README.md) for domain awareness (motor, policies).
 
 #### Algorithm Reference:
 Used in Algorithm `QueryRewriting` (Algorithm 1) in the OntoLLM paper.
@@ -30,14 +26,14 @@ Used in Algorithm `QueryRewriting` (Algorithm 1) in the OntoLLM paper.
 
 **Purpose**: Generates structured knowledge graph queries using ontological examples and domain-specific patterns.
 
-**Use Case**: Core component of the Structured Query Handler (SQH) for generating precise SPARQL/Cypher queries.
+**Use Case**: Core component of the Structured Query Handler (SQH) for generating target technology database  queries (e.g. Cypher,SQL queries).
 
 
 #### Key Features:
 - **Ontology-Grounded**: Uses complete ontology structure as context
 - **Few-Shot Learning**: Provides natural language to KG query examples
 - **Entity Parameterization**: Uses `#ent1`, `#ent2` placeholders for entity values
-- **Neo4j Compatibility**: Generates Cypher queries for Neo4j graph database
+
 
 #### Algorithm Reference:
 Used in Algorithm `CreateQueryPrompt` (Algorithm 6) in the OntoLLM paper.
