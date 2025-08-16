@@ -43,6 +43,12 @@ Natural Query: "Where is motor #ent1 located?"
 KG Query: "MATCH (m:Motor {MotorName: '#ent1'})-[:hasLocation]->(loc:Location) 
 RETURN loc.LocationName"
 
-$naturalquery_kgquery$
+Natural Query: "What type is motor #ent1?"
+KG Query: "MATCH (m:Motor {MotorName: '#ent1'})-[:hasModel]->(model:Model)-[:hasType]->(type:Type) 
+RETURN type.TypeName"
 
-Generate a KG query for: $query$
+Natural Query: "What phase is motor #ent1?"
+KG Query: "MATCH (m:Motor {MotorName: '#ent1'})-[:hasModel]->(model:Model)-[:hasPhase]->(phase:Phase) 
+RETURN phase.PhaseName"
+
+Generate a KG query for: What is the location of motor ACME Y2000?
