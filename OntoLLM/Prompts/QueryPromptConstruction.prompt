@@ -1,4 +1,4 @@
-In our experiments, we utilized a specific prompt setup for the Query Prompt Construction (Algorithm \ref{alg:prompt-creation}).
+In our experiments, we utilized a specific prompt setup for the Query Prompt Construction.
 
 The prompt for motor ontology:
 
