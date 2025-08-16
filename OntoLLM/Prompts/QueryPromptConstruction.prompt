@@ -1,8 +1,6 @@
 In our experiments, we utilized a specific prompt setup for the Query Prompt Construction.
 
 The prompt for motor ontology:
-
-\begin{verbatim}
 Given the following ontology structure:
 
 {
@@ -41,12 +39,10 @@ Given the following ontology structure:
     }
 Here are some example queries:
 
-Natural Query: "What are the installation steps for motor model name #ent1?"
-KG Query: "MATCH (m:Motor)-[:hasModel]->(md:Model {ModelName: '#ent1'})-[:hasManual]->
-(man:Manual)-[:hasQuestions]->(q:Question) RETURN q.ChunkQuestion"
-
 Natural Query: "Where is motor #ent1 located?"
 KG Query: "MATCH (m:Motor {MotorName: '#ent1'})-[:hasLocation]->(loc:Location) 
 RETURN loc.LocationName"
 
-Generate a KG query for: "What is the phase type of model Y200?"
+$naturalquery_kgquery$
+
+Generate a KG query for: $query$
