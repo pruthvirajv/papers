@@ -1,0 +1,56 @@
+{
+  "nodes": {
+    "Destination": {
+      "DestinationID": "Numeric",
+      "Name": "Text",
+      "Country": "Text",
+      "Popularity": "Numeric",
+      "PriceLevel": "Numeric"
+    },
+    "User": {
+      "UserID": "Numeric",
+      "AgeGroup": "Text",
+      "TravelPreference": "Text",
+      "TravelStyle": "Text",
+      "PreferredAccommodation": "Text"
+    },
+    "Rating": {
+      "UserID": "Numeric",
+      "DestinationID": "Numeric",
+      "Rating": "Numeric",
+      "Timestamp": "Numeric"
+    },
+    "Type": {
+      "TypeName": "Text"
+    },
+    "Activity": {
+      "ActivityName": "Text"
+    },
+    "Accommodation": {
+      "AccommodationName": "Text"
+    }
+  },
+  "relationtrees": {
+    "paths": [
+      "(D:Destination)-[ht:hasType]-(T:Type)",
+      "(D:Destination)-[ha:hasActivity]-(A:Activity)",
+      "(D:Destination)-[hc:hasAccommodation]-(C:Accommodation)",
+      "(U:User)-[r:RATED]-(D:Destination)",
+      "(U:User)-[hp:hasPreferredAccommodation]-(C:Accommodation)"
+    ]
+  },
+  "chainRank": {
+    "UserDestinationSimilarity": {
+      "SourceNode": "User",
+      "DestinatioNode": "Destination",
+      "Nodes": ["User", "Destination", "Type", "Activity", "Accommodation"],
+      "Relations": ["RATED"]
+    },
+    "DestinationSimilarity": {
+      "SourceNode": "Destination",
+      "DestinatioNode": "Destination",
+      "Nodes": ["Destination", "Type", "Activity", "Accommodation"],
+      "Relations": ["RATED"]
+    }
+  }
+}
