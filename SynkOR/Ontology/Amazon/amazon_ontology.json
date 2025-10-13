@@ -1,0 +1,50 @@
+{
+  "nodes": {
+    "Product": {
+      "ProductID": "Numeric",
+      "ProductName": "Text",
+      "Category": "Text",
+      "Price": "Numeric",
+      "Brand": "Text"
+    },
+    "User": {
+      "UserID": "Numeric",
+      "AgeGroup": "Text",
+      "Gender": "Text",
+      "Occupation": "Text"
+    },
+    "Rating": {
+      "UserID": "Numeric",
+      "ProductID": "Numeric",
+      "Rating": "Numeric",
+      "Timestamp": "Numeric"
+    },
+    "Category": {
+      "CategoryName": "Text"
+    },
+    "Brand": {
+      "BrandName": "Text"
+    }
+  },
+  "relationtrees": {
+    "paths": [
+      "(P:Product)-[hc:hasCategory]-(C:Category)",
+      "(P:Product)-[hb:hasBrand]-(B:Brand)",
+      "(U:User)-[r:RATED]-(P:Product)"
+    ]
+  },
+  "chainRank": {
+    "UserProductSimilarity": {
+      "SourceNode": "User",
+      "DestinatioNode": "Product",
+      "Nodes": ["User", "Product", "Category", "Brand"],
+      "Relations": ["RATED"]
+    },
+    "ProductSimilarity": {
+      "SourceNode": "Product",
+      "DestinatioNode": "Product",
+      "Nodes": ["Product", "Category", "Brand"],
+      "Relations": ["RATED"]
+    }
+  }
+}
