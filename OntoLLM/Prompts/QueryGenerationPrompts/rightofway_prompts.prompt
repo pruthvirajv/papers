@@ -1,0 +1,44 @@
+Given the following ontology structure:
+
+{
+    "nodes": {
+      "Region": {
+        "RegionName": "Text"
+      },
+      "Segment": {
+        "SegmentNumber": "Text"
+      },
+      "Type": {
+        "TypeName": "Text"
+      },
+      "ROW": {
+        "ROWNumber": "Text",
+        "DocDate": "Date",
+        "ImportedDate": "Date"
+      },
+      "Question": {
+        "ChunkVectorRefID": "Numeric",
+        "ChunkQuestion": "Text"
+      }
+    },
+    "relationtrees": {
+      "relations": [
+        "(RG:REGION)-[hs:hasSegment]-(SG:Segment)",
+        "(SG:Segment)-[hr:hasROW]-(RW:ROW)",
+        "(RW:ROW)-[ht:hasType]-(TP:Type)",
+        "(SG:Segment)-[hr:hasROW]-(RW:ROW)-[hq:hasQuestions]-(Q:Question)",
+        "(Q:Question)-[r:related]-(Q2:Question)"
+      ]
+    }
+}
+
+Here are example queries mapping natural-language questions to graph (Cypher-style) queries.
+
+Natural Query: "Show all ROWs for Segment 12 and their Type names."
+KG Query: "MATCH (sg:Segment {SegmentNumber: '12'})-[:hr:hasROW]->(rw:ROW)-[:ht:hasType]->(t:Type) RETURN rw.ROWNumber, t.TypeName"
+
+Natural Query: "Return ROWs of Type 'Temporary' in Region 'Eastern'."
+KG Query: "MATCH (rg:Region {RegionName: 'Eastern'})-[:hs:hasSegment]->(sg:Segment)-[:hr:hasROW]->(rw:ROW)-[:ht:hasType]->(t:Type {TypeName: 'Temporary'}) RETURN rg.RegionName, sg.SegmentNumber, rw.ROWNumber, t.TypeName"
+
+Natural Query: "Show ROWs for Segment 12 and Type 'Temporary' (using ent1 and ent2)."
+KG Query: "MATCH (sg:Segment {SegmentNumber: '12'})-[:hr:hasROW]->(rw:ROW)-[:ht:hasType]->(t:Type {TypeName: 'Temporary'}) RETURN sg.SegmentNumber AS ent1, t.TypeName AS ent2, rw.ROWNumber"

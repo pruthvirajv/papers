@@ -1,0 +1,43 @@
+Given the following ontology structure:
+
+{
+  "nodes": {
+    "Employee": {
+      "EmployeeName": "Text"
+    },
+    "Role": {
+      "RoleName": "Text"
+    },
+    "Type": {
+      "TypeName": "Text"
+    },
+    "Department": {
+      "DepartmentName": "Text"
+    },
+    "Policy": {
+      "PolicyName": "Text"
+    },
+    "Question": {
+      "ChunkVectorRefID": "Numeric",
+      "ChunkQuestion": "Text"
+    }
+  },
+  "relationtrees": {
+    "relations": [
+      "(EM:EMPLOYEE)-[hem:hasRole]-(RL:Role)",
+      "(EM:EMPLOYEE)-[ht:hasType]-(TP:Type)",
+      "(EM:EMPLOYEE)-[hd:hasDepartment]-(DP:Department)",
+      "(EM:EMPLOYEE)-[hd:hasDepartment]-(DP:Department)-[hp:hasPolicy]-(PL:Policy)",
+      "(EM:EMPLOYEE)-[hd:hasDepartment]-(DP:Department)-[hp:hasPolicy]-(PL:Policy)-[hq:hasQuestion]-(CH:Question)",
+      "(CH:Question)-[r:related]-(Q:Question)"
+    ]
+  }
+}
+
+Here are example queries that map natural-language questions to graph (Cypher-style) queries:
+
+Natural Query: "List employees in department #ent1."
+KG Query: "MATCH (d:Department {DepartmentName: '#ent1'})<-[:hd:hasDepartment]-(e:Employee) RETURN e.EmployeeName"
+
+Natural Query: "List policies for department #ent1."
+KG Query: "MATCH (d:Department {DepartmentName: '#ent1'})-[:hp:hasPolicy]->(p:Policy) RETURN p.PolicyName"
