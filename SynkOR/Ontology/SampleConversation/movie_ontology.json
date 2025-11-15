@@ -1,0 +1,55 @@
+"nodes": {
+    "Movie": {
+    "title": "Text",
+    "id": "Numeric",
+    "genres": "Text",
+    "year": "Numeric",
+    "infoEmbeddings": "TextEmbeddings",
+    "thumbnailEmbeddings": "ImageEmbeddings"
+    },
+    "User": {
+    "id": "Numeric",
+    "userName": "Text"
+    },
+    "Genre": {
+    "name": "Text"
+    },
+    "Director": {
+    "directorName": "Text"
+    },
+    "Actor": {
+    "actorName": "Text"
+    },
+    "Language": {
+    "languageName": "Text"
+    },
+    "ReleaseYear": {
+    "value": "Numeric"
+    }
+}
+"relationtrees": {
+    "paths": [
+        "(M:Movie)-[hg:HAS_GENRE]-(G:Genre)",
+        "(M:Movie)-[hd:HAS_DIRECTOR]-(D:Director)",
+        "(M:Movie)-[ha:HAS_ACTOR]-(A:Actor)",
+        "(M:Movie)-[hl:HAS_LANGUAGE]-(L:Language)",
+        "(M:Movie)-[hr:HAS_RELEASE_YEAR]-(R:ReleaseYear)",
+        "(U:User)-[hg:HAS_GENRE]-(G:Genre)",
+        "(U:User)-[rt:RATED]-(M:Movie)",
+        "(U:User)-[hw:HAS_WATCHED]-(M:Movie)"
+    ]
+}
+"nodeSimilarity": {
+    "UserMovieSimilarity": {
+    "sourceNode": "User",
+    "destinationNode": "Movie",
+    "nodes": ["User", "Movie", "Genre", "Director", "Actor"],
+    "relations": ["HAS_GENRE", "HAS_DIRECTOR", "HAS_ACTOR"]
+    },
+    "MovieSimilarity": {
+    "sourceNode": "Movie",
+    "destinationNode": "Movie",
+    "nodes": ["Movie", "Genre", "Language", "ReleaseYear"],
+    "relations": ["HAS_GENRE", "HAS_LANGUAGE", "HAS_RELEASE_YEAR"]
+    }
+}
