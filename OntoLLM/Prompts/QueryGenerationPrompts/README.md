@@ -23,18 +23,7 @@ Each `.prompt` file contains templates intended for automated query / instructio
 Purpose:
 - Generate queries related to employees: attributes, roles, relationships, filtering, and entity linking.
 
-Expected input:
-- An employee entity or dataset context (e.g., name, ID, attributes).
-- Objective such as "summarize", "search", "extract relations", or "generate filters".
-
-Expected output:
-- Structured queries, attribute lists, natural-language questions, or extraction templates.
-
-Usage notes:
-- Use when mapping employee metadata to knowledge-graph queries or creating QA prompts about staff.
-- Include role and privacy constraints if output may expose PII.
-
-Example snippet:
+Example Usage:
 - Generate a KG query for: List all the employees in HR department
 
 ---
@@ -43,17 +32,7 @@ Example snippet:
 Purpose:
 - Create exploratory plans and stepwise strategies for information discovery given an ontology or dataset.
 
-Expected input:
-- A research goal, ontology/context description, and constraints (time, depth).
-
-Expected output:
-- Ordered plan steps, prioritized queries, recommended resources, and stopping criteria.
-
-Usage notes:
-- Use for multi-step data exploration, active learning workflows, or when orchestrating sequential LLM calls.
-- Include success metrics or resource limits to guide plan brevity.
-
-Example snippet:
+Example Usage:
 -  Generate a KG query for: What is the exploration plan with control number 52 
 
 ---
@@ -62,17 +41,7 @@ Example snippet:
 Purpose:
 - Generate prompts related to motor actions, control descriptions, or domain-specific motor attributes (e.g., for robotics, vehicles, or machinery).
 
-Expected input:
-- Motor specs or desired action descriptions (e.g., torque, speed, safety constraints).
-
-Expected output:
-- Structured action commands, verification checks, or natural-language summaries of motor behavior.
-
-Usage notes:
-- Validate units and safety constraints before executing any generated control commands.
-- Limit to simulation or planning output; do not use for direct actuation without further validation.
-
-Example snippet:
+Example Usage:
 - Generate a KG query for: What is the location of motor ACME Y2000?
 
 ---
@@ -81,17 +50,7 @@ Example snippet:
 Purpose:
 - Generate prompts about right-of-way rules, conflict resolution, and traffic-priority scenarios.
 
-Expected input:
-- Scenario description (agents, positions, signals) and jurisdiction or rule-set.
-
-Expected output:
-- Decision rules, prioritized agent list, recommended maneuvers or clarifying questions.
-
-Usage notes:
-- Specify jurisdiction or traffic code to avoid ambiguous advice.
-- Use strictly for planning/simulation; do not substitute for legal or safety authority.
-
-Example snippet:
+Example Usage:
 - Generate a KG query for: Provide temporary ROWs of estern region
 
 ---
