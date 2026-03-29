@@ -1,0 +1,68 @@
+{
+  "nodes": {
+    "Movie": {
+      "MovieID": "Numeric",
+      "Title": "Text"
+    },
+    "User": {
+      "UserID": "Numeric",
+      "Gender": "Text",
+      "Zip-code": "Text"
+    },
+    "Rating": {
+      "UserID": "Numeric",
+      "MovieID": "Numeric",
+      "Rating": "Numeric",
+      "Timestamp": "Numeric"
+    },
+    "Genres": {
+      "GenresName": "Text"
+    },
+    "ReleaseYear": {
+      "ReleaseYearValue": "Numeric"
+    },
+    "Age": {
+      "AgeID": "Numeric",
+      "AgeCategory": "Text"
+    },
+    "Occupation": {
+      "OccupationID": "Numeric",
+      "OccupationCategory": "Text"
+    },
+    "Gender": {
+      "GenderID": "Text",
+      "GenderName": "Text"
+    }
+  },
+  "relationtrees": {
+    "paths": [
+      "(MO:Movie)-[hg:hasGenres]-(G:Genres)",
+      "(MO:Movie)-[hr:hasReleaseYear]-(R:ReleaseYear)",
+      "(U:User)-[ha:hasAge]-(A:Age)",
+      "(U:User)-[ha:hasGender]-(G:Gender)",
+      "(U:User)-[hg:hasGenres]-(G:Genres)",
+      "(U:User)-[ho:hasOccupation]-(O:Occupation)",
+      "(U:User)-[r:RATED]-(M:Movie)"
+    ]
+  },
+  "chainRank": {
+    "UserMovieSimilarity": {
+      "SourceNode": "User",
+      "DestinatioNode": "Movie",
+      "Nodes": ["User", "Movie", "Genres"],
+      "Relations": ["hasGenres"]
+    },
+    "MovieSimilarity": {
+      "SourceNode": "Movie",
+      "DestinatioNode": "Movie",
+      "Nodes": ["Movie", "Genres", "ReleaseYear"],
+      "Relations": ["hasGenres", "hasReleaseYear"]
+    },
+    "UserSimilarity": {
+      "SourceNode": "User",
+      "DestinatioNode": "User",
+      "Nodes": ["User", "Genres", "Age","Occupation"],
+      "Relations": ["hasGenres", "hasAge","hasOccupation","hasGender"]
+    }
+  }
+}
