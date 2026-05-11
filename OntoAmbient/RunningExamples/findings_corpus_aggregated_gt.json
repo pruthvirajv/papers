@@ -1,0 +1,529 @@
+[
+  {
+    "FindingID": "F01",
+    "FindingType": "GeographicFraudConcentration",
+    "AggregationLevel": "State",
+    "EntityType": "GeographicLocation",
+    "FindingDescription": "State 49 shows a provider fraud rate of 19.6% \u2014 2.1x the national average of 9.4%. Average provider reimbursement in this state is 1.2x the national median. 107 providers analysed. What is driving this geographic concentration of fraud?",
+    "ObservedValue": 0.1963,
+    "BaselineValue": 0.0935,
+    "DeviationRatio": 2.098,
+    "AffectedEntities": [
+      "State_49"
+    ],
+    "AffectedCount": 107,
+    "AnalyticalMetric": "FraudProviderRate",
+    "ComparisonBaseline": "National average fraud provider rate",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.65,
+    "DataSources": [
+      "provider_sql",
+      "analytics_warehouse",
+      "claims_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "GeographicLocation",
+      "Provider",
+      "Claim"
+    ],
+    "RelationPaths": [
+      "(P:Provider)-[operates:operatesIn]-(GL:GeographicLocation)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+    ],
+    "GroundTruth": {
+      "test_name": "Chi-square + Cohen's h",
+      "statistic": 72.6788,
+      "p_value": 0.024714,
+      "effect_size_name": "Cohen's h",
+      "effect_size": 0.3035,
+      "effect_label": "small",
+      "significant": true,
+      "verdict": "WEAK",
+      "interpretation": "State fraud rates differ significantly (chi2=72.7, p=0.0247). Worst state vs rest: h=0.303 (small effect). Cram\u00e9r's V=0.116. Geographic concentration is WEAK."
+    },
+    "GroundTruthVerdict": "WEAK",
+    "StatisticalTest": "Chi-square + Cohen's h",
+    "PValue": 0.024714,
+    "EffectSize": 0.3035,
+    "EffectSizeName": "Cohen's h",
+    "EffectLabel": "small",
+    "StatisticallySignificant": true,
+    "GTInterpretation": "State fraud rates differ significantly (chi2=72.7, p=0.0247). Worst state vs rest: h=0.303 (small effect). Cram\u00e9r's V=0.116. Geographic concentration is WEAK."
+  },
+  {
+    "FindingID": "F02",
+    "FindingType": "SeasonalFraudSpike",
+    "AggregationLevel": "Quarter",
+    "EntityType": "TimeWindow",
+    "FindingDescription": "Q2 shows a claim-level fraud rate of 38.2% \u2014 1.0x higher than Q4 (38.0%). Average reimbursement in the peak quarter is $993 vs $1,015 in the low quarter. Is there a seasonal pattern in fraudulent billing behaviour?",
+    "ObservedValue": 0.3822,
+    "BaselineValue": 0.3812,
+    "DeviationRatio": 1.007,
+    "AffectedEntities": [
+      "Q2"
+    ],
+    "AffectedCount": 144743,
+    "AnalyticalMetric": "QuarterlyFraudRate",
+    "ComparisonBaseline": "Annual average fraud rate",
+    "GroundTruthLabel": 0,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.336,
+    "DataSources": [
+      "claims_sql",
+      "analytics_warehouse",
+      "provider_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "TimeWindow",
+      "Claim",
+      "Provider"
+    ],
+    "RelationPaths": [
+      "(C:Claim)-[during:occurredDuring]-(TW:TimeWindow)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+    ],
+    "GroundTruth": {
+      "test_name": "One-way ANOVA",
+      "statistic": 0.7383,
+      "p_value": 0.529001,
+      "effect_size_name": "Eta-squared",
+      "effect_size": 0.0,
+      "effect_label": "negligible",
+      "significant": false,
+      "verdict": "SPURIOUS",
+      "interpretation": "Quarterly fraud rates: [np.float64(0.381), np.float64(0.382), np.float64(0.382), np.float64(0.38)]. ANOVA F=0.74, p=0.5290, eta\u00b2=0.0000. Seasonal effect is SPURIOUS."
+    },
+    "GroundTruthVerdict": "SPURIOUS",
+    "StatisticalTest": "One-way ANOVA",
+    "PValue": 0.529001,
+    "EffectSize": 0.0,
+    "EffectSizeName": "Eta-squared",
+    "EffectLabel": "negligible",
+    "StatisticallySignificant": false,
+    "GTInterpretation": "Quarterly fraud rates: [np.float64(0.381), np.float64(0.382), np.float64(0.382), np.float64(0.38)]. ANOVA F=0.74, p=0.5290, eta\u00b2=0.0000. Seasonal effect is SPURIOUS."
+  },
+  {
+    "FindingID": "F03",
+    "FindingType": "PhysicianNetworkFraudCorrelation",
+    "AggregationLevel": "ProviderGroup",
+    "EntityType": "Physician",
+    "FindingDescription": "Providers with 11-50 unique attending physicians show a fraud rate of 14.0% \u2014 9.3x higher than single-physician providers (1.5%). Does physician network size predict organised fraud rings where multiple physicians share billing across providers?",
+    "ObservedValue": 0.1403,
+    "BaselineValue": 0.0152,
+    "DeviationRatio": 9.26,
+    "AffectedEntities": [
+      "providers_11_to_50_physicians"
+    ],
+    "AffectedCount": 1732,
+    "AnalyticalMetric": "FraudRateByPhysicianCount",
+    "ComparisonBaseline": "Single-physician provider fraud rate",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Multi-hop",
+    "ConfidenceScore": 0.65,
+    "DataSources": [
+      "physician_nosql",
+      "provider_sql",
+      "claims_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "Physician",
+      "Provider",
+      "Claim"
+    ],
+    "RelationPaths": [
+      "(PH:Physician)-[worksFor:worksForProvider]-(P:Provider)",
+      "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+    ],
+    "GroundTruth": {
+      "test_name": "Welch t-test",
+      "statistic": 17.409,
+      "p_value": 0.0,
+      "effect_size_name": "Cohen's d",
+      "effect_size": 0.4958,
+      "effect_label": "small",
+      "significant": true,
+      "verdict": "WEAK",
+      "interpretation": "High-physician providers fraud rate: 0.174 vs single-physician: 0.015. t=17.41, p=0.0000, d=0.496 (small). Physician network effect is WEAK."
+    },
+    "GroundTruthVerdict": "WEAK",
+    "StatisticalTest": "Welch t-test",
+    "PValue": 0.0,
+    "EffectSize": 0.4958,
+    "EffectSizeName": "Cohen's d",
+    "EffectLabel": "small",
+    "StatisticallySignificant": true,
+    "GTInterpretation": "High-physician providers fraud rate: 0.174 vs single-physician: 0.015. t=17.41, p=0.0000, d=0.496 (small). Physician network effect is WEAK."
+  },
+  {
+    "FindingID": "F04",
+    "FindingType": "ReimbursementBimodality",
+    "AggregationLevel": "ClaimDistribution",
+    "EntityType": "OutpatientClaim",
+    "FindingDescription": "Outpatient claim reimbursements show a bimodal distribution: 68.3% of claims cluster below $200 and 7.0% exceed $1,000. The high-value cluster (>$1,000) has a fraud rate of 36.5% vs 36.6% in the low cluster. What explains this bimodal separation and why does the high-value cluster have elevated fraud association?",
+    "ObservedValue": 0.3646,
+    "BaselineValue": 0.3659,
+    "DeviationRatio": 0.996,
+    "AffectedEntities": [
+      "outpatient_high_value_cluster"
+    ],
+    "AffectedCount": 35991,
+    "AnalyticalMetric": "OutpatientReimbursementDistribution",
+    "ComparisonBaseline": "Low-value outpatient cluster fraud rate",
+    "GroundTruthLabel": 0,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.4,
+    "DataSources": [
+      "claims_sql",
+      "beneficiary_sql",
+      "provider_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "OutpatientClaim",
+      "Claim",
+      "Provider"
+    ],
+    "RelationPaths": [
+      "(OC:OutpatientClaim)-[isA:isTypeOf]-(C:Claim)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+    ],
+    "GroundTruth": {
+      "test_name": "Welch t-test",
+      "statistic": -0.5576,
+      "p_value": 0.57713,
+      "effect_size_name": "Cohen's d",
+      "effect_size": -0.0031,
+      "effect_label": "negligible",
+      "significant": false,
+      "verdict": "SPURIOUS",
+      "interpretation": "High cluster (>$1000) fraud rate: 0.365 vs low cluster (<$200): 0.366. t=-0.56, p=0.5771, d=-0.003 (negligible). Bimodal fraud difference is SPURIOUS."
+    },
+    "GroundTruthVerdict": "SPURIOUS",
+    "StatisticalTest": "Welch t-test",
+    "PValue": 0.57713,
+    "EffectSize": -0.0031,
+    "EffectSizeName": "Cohen's d",
+    "EffectLabel": "negligible",
+    "StatisticallySignificant": false,
+    "GTInterpretation": "High cluster (>$1000) fraud rate: 0.365 vs low cluster (<$200): 0.366. t=-0.56, p=0.5771, d=-0.003 (negligible). Bimodal fraud difference is SPURIOUS."
+  },
+  {
+    "FindingID": "F05",
+    "FindingType": "ChronicConditionMismatch",
+    "AggregationLevel": "PatientPopulation",
+    "EntityType": "Beneficiary",
+    "FindingDescription": "Fraud-flagged provider claims are submitted for patients with an average of 17.46 chronic conditions, compared to 17.53 for non-fraud providers (p=0.0000, t-test). 0.0% of fraud claims involve patients with zero recorded chronic conditions. Are fraud providers systematically billing expensive procedures for patients whose medical profiles do not justify them?",
+    "ObservedValue": 17.4577,
+    "BaselineValue": 17.5283,
+    "DeviationRatio": 0.996,
+    "AffectedEntities": [
+      "fraud_provider_patient_population"
+    ],
+    "AffectedCount": 0,
+    "AnalyticalMetric": "AvgChronicConditionCount",
+    "ComparisonBaseline": "Non-fraud provider patient chronic condition avg",
+    "StatisticalTest": "Welch t-test",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.65,
+    "DataSources": [
+      "beneficiary_sql",
+      "claims_sql",
+      "provider_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "Beneficiary",
+      "Claim",
+      "Provider",
+      "DiagnosisCode"
+    ],
+    "RelationPaths": [
+      "(B:Beneficiary)-[has:hasChronicCondition]-(D:DiagnosisCode)",
+      "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+    ],
+    "GroundTruth": {
+      "test_name": "Welch t-test",
+      "statistic": -10.9705,
+      "p_value": 0.0,
+      "effect_size_name": "Cohen's d",
+      "effect_size": -0.0302,
+      "effect_label": "negligible",
+      "significant": true,
+      "verdict": "WEAK",
+      "interpretation": "Fraud claims avg chronic conditions: 17.458 vs non-fraud: 17.528. t=-10.97, p=0.0000, d=-0.030 (negligible). Chronic condition mismatch is WEAK."
+    },
+    "GroundTruthVerdict": "WEAK",
+    "PValue": 0.0,
+    "EffectSize": -0.0302,
+    "EffectSizeName": "Cohen's d",
+    "EffectLabel": "negligible",
+    "StatisticallySignificant": true,
+    "GTInterpretation": "Fraud claims avg chronic conditions: 17.458 vs non-fraud: 17.528. t=-10.97, p=0.0000, d=-0.030 (negligible). Chronic condition mismatch is WEAK."
+  },
+  {
+    "FindingID": "F06",
+    "FindingType": "ShortAdmissionHighReimbursement",
+    "AggregationLevel": "InpatientClaimGroup",
+    "EntityType": "InpatientClaim",
+    "FindingDescription": "12.8% of inpatient claims have admission duration of 0-1 days yet average reimbursement of $7,166 \u2014 compared to $10,518 for longer stays. Short-stay claims have a fraud rate of 59.2% vs 57.6% for longer stays. Are providers billing inpatient-level reimbursements for effectively outpatient procedures?",
+    "ObservedValue": 0.5922,
+    "BaselineValue": 0.5761,
+    "DeviationRatio": 1.028,
+    "AffectedEntities": [
+      "inpatient_short_stay_0_1_days"
+    ],
+    "AffectedCount": 5196,
+    "AnalyticalMetric": "AdmissionDurationVsReimbursement",
+    "ComparisonBaseline": "Long-stay inpatient fraud rate",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.65,
+    "DataSources": [
+      "claims_sql",
+      "provider_sql",
+      "beneficiary_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "InpatientClaim",
+      "Claim",
+      "Provider"
+    ],
+    "RelationPaths": [
+      "(IC:InpatientClaim)-[isA:isTypeOf]-(C:Claim)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+    ],
+    "GroundTruth": {
+      "test_name": "Welch t-test (fraud rate)",
+      "statistic": 2.1959,
+      "p_value": 0.028131,
+      "effect_size_name": "Cohen's d",
+      "effect_size": 0.0325,
+      "effect_label": "negligible",
+      "significant": true,
+      "verdict": "WEAK",
+      "interpretation": "Short-stay (0-1d) fraud rate: 0.592 vs long-stay: 0.576. t=2.20, p=0.0281, d=0.032 (negligible). Reimbursement diff: short=$7,166 vs long=$10,518 (d=-0.327). Short admission anomaly is WEAK."
+    },
+    "GroundTruthVerdict": "WEAK",
+    "StatisticalTest": "Welch t-test (fraud rate)",
+    "PValue": 0.028131,
+    "EffectSize": 0.0325,
+    "EffectSizeName": "Cohen's d",
+    "EffectLabel": "negligible",
+    "StatisticallySignificant": true,
+    "GTInterpretation": "Short-stay (0-1d) fraud rate: 0.592 vs long-stay: 0.576. t=2.20, p=0.0281, d=0.032 (negligible). Reimbursement diff: short=$7,166 vs long=$10,518 (d=-0.327). Short admission anomaly is WEAK."
+  },
+  {
+    "FindingID": "F07",
+    "FindingType": "PeerGroupReimbursementDeviation",
+    "AggregationLevel": "ProviderGroup",
+    "EntityType": "Provider",
+    "FindingDescription": "Providers in the top 5% of reimbursement vs state peer median bill on average 53.5x their state peers and show a fraud rate of 72.3% \u2014 compared to 6.0% for providers billing within peer norms. 271 providers identified. Does extreme peer group deviation systematically predict fraud beyond what absolute reimbursement levels reveal?",
+    "ObservedValue": 0.7232,
+    "BaselineValue": 0.0603,
+    "DeviationRatio": 11.99,
+    "AffectedEntities": [
+      "top_5pct_peer_deviation_providers"
+    ],
+    "AffectedCount": 271,
+    "AnalyticalMetric": "ReimbursementVsPeerMedian",
+    "ComparisonBaseline": "Providers within peer reimbursement norms",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.84,
+    "DataSources": [
+      "provider_sql",
+      "analytics_warehouse",
+      "claims_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "Provider",
+      "GeographicLocation",
+      "Claim"
+    ],
+    "RelationPaths": [
+      "(P:Provider)-[operates:operatesIn]-(GL:GeographicLocation)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+    ],
+    "GroundTruth": {
+      "test_name": "Mann-Whitney U",
+      "statistic": 1157951.5,
+      "p_value": 0.0,
+      "effect_size_name": "Rank-biserial r",
+      "effect_size": -0.6629,
+      "effect_label": "large",
+      "significant": true,
+      "verdict": "CONFIRMED",
+      "interpretation": "Top-5% peer deviants fraud rate: 0.723 vs normal providers: 0.060. U=1157952, p=0.0000, r=-0.663. Peer deviation fraud signal is CONFIRMED."
+    },
+    "GroundTruthVerdict": "CONFIRMED",
+    "StatisticalTest": "Mann-Whitney U",
+    "PValue": 0.0,
+    "EffectSize": -0.6629,
+    "EffectSizeName": "Rank-biserial r",
+    "EffectLabel": "large",
+    "StatisticallySignificant": true,
+    "GTInterpretation": "Top-5% peer deviants fraud rate: 0.723 vs normal providers: 0.060. U=1157952, p=0.0000, r=-0.663. Peer deviation fraud signal is CONFIRMED."
+  },
+  {
+    "FindingID": "F08",
+    "FindingType": "DiagnosisCodeFraudConcentration",
+    "AggregationLevel": "DiagnosisCode",
+    "EntityType": "DiagnosisCode",
+    "FindingDescription": "The top 5 diagnosis codes by fraud rate show an average fraud association of 63.9% \u2014 1.7x the overall rate of 38.1%. These codes (including 44024, 55221) average $12,830 per claim. Are specific diagnosis codes being systematically exploited to justify high-reimbursement claims across fraud providers?",
+    "ObservedValue": 0.6393,
+    "BaselineValue": 0.3812,
+    "DeviationRatio": 1.677,
+    "AffectedEntities": [
+      "44024",
+      "55221",
+      "85221"
+    ],
+    "AffectedCount": 429,
+    "AnalyticalMetric": "DiagnosisCodeFraudRate",
+    "ComparisonBaseline": "Overall claim-level fraud rate",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.65,
+    "DataSources": [
+      "claims_sql",
+      "beneficiary_sql",
+      "provider_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "DiagnosisCode",
+      "Claim",
+      "Provider",
+      "Beneficiary"
+    ],
+    "RelationPaths": [
+      "(C:Claim)-[coded:hasDiagnosis]-(D:DiagnosisCode)",
+      "(B:Beneficiary)-[has:hasChronicCondition]-(D:DiagnosisCode)"
+    ],
+    "GroundTruth": {
+      "test_name": "Chi-square",
+      "statistic": 119.5757,
+      "p_value": 0.0,
+      "effect_size_name": "Cram\u00e9r's V",
+      "effect_size": 0.0146,
+      "effect_label": "negligible",
+      "significant": true,
+      "verdict": "WEAK",
+      "interpretation": "Top-5 fraud diagnosis codes fraud rate: 0.639 vs rest: 0.381. chi2=119.6, p=0.0000, V=0.015. Diagnosis code concentration is WEAK."
+    },
+    "GroundTruthVerdict": "WEAK",
+    "StatisticalTest": "Chi-square",
+    "PValue": 0.0,
+    "EffectSize": 0.0146,
+    "EffectSizeName": "Cram\u00e9r's V",
+    "EffectLabel": "negligible",
+    "StatisticallySignificant": true,
+    "GTInterpretation": "Top-5 fraud diagnosis codes fraud rate: 0.639 vs rest: 0.381. chi2=119.6, p=0.0000, V=0.015. Diagnosis code concentration is WEAK."
+  },
+  {
+    "FindingID": "F09",
+    "FindingType": "ZeroDurationClaimAnomaly",
+    "AggregationLevel": "ClaimGroup",
+    "EntityType": "Claim",
+    "FindingDescription": "81.3% of all claims have a duration of 0 days (ClaimStartDt = ClaimEndDt) yet average reimbursement of $241. These zero-duration claims have a fraud rate of 36.6% vs 44.9% for claims with non-zero duration. Are zero-duration claims being used to submit high-value reimbursements for services that required no extended care?",
+    "ObservedValue": 0.3657,
+    "BaselineValue": 0.4487,
+    "DeviationRatio": 0.815,
+    "AffectedEntities": [
+      "zero_duration_claims"
+    ],
+    "AffectedCount": 453953,
+    "AnalyticalMetric": "ClaimDurationVsFraudRate",
+    "ComparisonBaseline": "Non-zero duration claim fraud rate",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.65,
+    "DataSources": [
+      "claims_sql",
+      "provider_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "Claim",
+      "Provider",
+      "InpatientClaim"
+    ],
+    "RelationPaths": [
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+      "(IC:InpatientClaim)-[isA:isTypeOf]-(C:Claim)"
+    ],
+    "GroundTruth": {
+      "test_name": "Welch t-test",
+      "statistic": -48.8944,
+      "p_value": 0.0,
+      "effect_size_name": "Cohen's d",
+      "effect_size": -0.1713,
+      "effect_label": "negligible",
+      "significant": true,
+      "verdict": "WEAK",
+      "interpretation": "Zero-duration fraud rate: 0.366 vs non-zero: 0.449. t=-48.89, p=0.0000, d=-0.171 (negligible). Zero-duration anomaly is WEAK."
+    },
+    "GroundTruthVerdict": "WEAK",
+    "StatisticalTest": "Welch t-test",
+    "PValue": 0.0,
+    "EffectSize": -0.1713,
+    "EffectSizeName": "Cohen's d",
+    "EffectLabel": "negligible",
+    "StatisticallySignificant": true,
+    "GTInterpretation": "Zero-duration fraud rate: 0.366 vs non-zero: 0.449. t=-48.89, p=0.0000, d=-0.171 (negligible). Zero-duration anomaly is WEAK."
+  },
+  {
+    "FindingID": "F10",
+    "FindingType": "MultiProviderFraudPatientPattern",
+    "AggregationLevel": "PatientProviderNetwork",
+    "EntityType": "Beneficiary",
+    "FindingDescription": "3,837 beneficiaries (2.77% of all patients) are treated by 3 or more providers that are ALL fraud-flagged. These patients have an average total reimbursement of $7,359 across their fraud provider visits. Are certain patients being used as shared billing vehicles across a coordinated fraud provider network?",
+    "ObservedValue": 2.7693,
+    "BaselineValue": 0.0,
+    "DeviationRatio": 7.381,
+    "AffectedEntities": [
+      "beneficiaries_in_multi_fraud_provider_network"
+    ],
+    "AffectedCount": 3837,
+    "AnalyticalMetric": "BeneficiaryFraudProviderCount",
+    "ComparisonBaseline": "Average per-claim reimbursement",
+    "GroundTruthLabel": 0,
+    "VerificationMethod": "Multi-hop",
+    "ConfidenceScore": 0.4,
+    "DataSources": [
+      "beneficiary_sql",
+      "claims_sql",
+      "provider_sql",
+      "physician_nosql"
+    ],
+    "OntologyNodesInvolved": [
+      "Beneficiary",
+      "Claim",
+      "Provider",
+      "Physician"
+    ],
+    "RelationPaths": [
+      "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+      "(PH:Physician)-[worksFor:worksForProvider]-(P:Provider)"
+    ],
+    "GroundTruth": {
+      "test_name": "Fisher's exact test",
+      "statistic": 0.4918,
+      "p_value": 1.0,
+      "effect_size_name": "Log odds ratio",
+      "effect_size": -0.7096,
+      "effect_label": "medium",
+      "significant": false,
+      "verdict": "SPURIOUS",
+      "interpretation": "Multi-provider patients (3+) are 0.49x more likely to be exclusively at fraud providers. p=1.0000, log_OR=-0.710. Multi-provider fraud pattern is SPURIOUS."
+    },
+    "GroundTruthVerdict": "SPURIOUS",
+    "StatisticalTest": "Fisher's exact test",
+    "PValue": 1.0,
+    "EffectSize": -0.7096,
+    "EffectSizeName": "Log odds ratio",
+    "EffectLabel": "medium",
+    "StatisticallySignificant": false,
+    "GTInterpretation": "Multi-provider patients (3+) are 0.49x more likely to be exclusively at fraud providers. p=1.0000, log_OR=-0.710. Multi-provider fraud pattern is SPURIOUS."
+  }
+]
