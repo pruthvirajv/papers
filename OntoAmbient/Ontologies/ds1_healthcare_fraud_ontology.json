@@ -1,0 +1,436 @@
+{
+  "ontology_name": "Healthcare Provider Fraud Detection Ontology",
+  "domain": "Healthcare Insurance Fraud",
+  "version": "2.0",
+  "dataset": "DS1",
+  "source": "https://www.kaggle.com/datasets/rohitrox/healthcare-provider-fraud-detection-analysis",
+  "source_files": [
+    "Train-1542865627584.csv (Provider labels -> PotentialFraud ground truth)",
+    "Train_Beneficiarydata-1542865627584.csv (Patient demographics + chronic conditions)",
+    "Train_Inpatientdata-1542865627584.csv (Hospital admission claims)",
+    "Train_Outpatientdata-1542865627584.csv (Outpatient visit claims)"
+  ],
+  "description": "Ontology for automated fraud hypothesis generation using the Kaggle Healthcare Provider Fraud Detection Analysis dataset. Covers provider-level fraud detection through analysis of inpatient claims, outpatient claims, and beneficiary demographics. The PotentialFraud column is the primary ground truth label. Multi-hop paths traverse: Provider \u2192 Claim \u2192 Beneficiary \u2192 ChronicCondition \u2192 DiagnosisCode \u2192 ProcedureCode \u2192 Physician \u2192 GeographicLocation \u2192 TimeWindow.",
+  "nodes": {
+    "Provider": {
+      "datasource": {
+        "tool_name": "query_provider_db",
+        "source_name": "provider_sql",
+        "simulates": "SQLite operational database",
+        "key_fields": [
+          "Provider"
+        ],
+        "join_keys": {
+          "Claim": "Provider"
+        },
+        "description": "Provider fraud labels and derived risk features"
+      },
+      "ProviderID": "Text | Unique identifier for each healthcare provider (hospital, clinic, or individual practitioner) who submits Medicare claims.",
+      "PotentialFraud": "Boolean | Ground truth label \u2014 Yes if the provider has been flagged as potentially fraudulent based on Medicare investigation. This is the primary target variable and verification oracle.",
+      "TotalClaimsCount": "Numeric | Derived \u2014 total number of claims (inpatient + outpatient) submitted by this provider. Unusually high counts relative to peers is a fraud indicator.",
+      "TotalReimbursementAmt": "Numeric | Derived \u2014 total USD amount reimbursed to this provider across all claims. Outliers at provider level are the strongest single fraud indicator.",
+      "TotalDeductibleAmt": "Numeric | Derived \u2014 total deductible amount paid by patients for this provider's claims. Unusually low deductibles with high reimbursements can indicate inflated billing.",
+      "UniquePatientCount": "Numeric | Derived \u2014 number of distinct patients (BeneID) treated by this provider. Fraud providers often have abnormally high patient counts to justify claim volumes.",
+      "UniquePhysicianCount": "Numeric | Derived \u2014 number of distinct attending physicians associated with this provider. Many physicians at one provider can indicate a ghost billing network.",
+      "AvgClaimDuration": "Numeric | Derived \u2014 average number of days between ClaimStartDt and ClaimEndDt for this provider's claims. Fraudulent providers tend to have shorter durations with higher reimbursements.",
+      "InpatientClaimsCount": "Numeric | Derived \u2014 number of inpatient (hospital admission) claims submitted by this provider.",
+      "OutpatientClaimsCount": "Numeric | Derived \u2014 number of outpatient (visit-only) claims submitted by this provider.",
+      "FraudRiskScore": "Numeric | Derived \u2014 composite risk score combining normalized reimbursement rank and claim count rank. Range 0-1; higher values indicate greater fraud risk."
+    },
+    "Beneficiary": {
+      "datasource": {
+        "tool_name": "query_beneficiary_db",
+        "source_name": "beneficiary_sql",
+        "simulates": "MySQL patient records database",
+        "key_fields": [
+          "BeneID"
+        ],
+        "join_keys": {
+          "Claim": "BeneID"
+        },
+        "description": "Patient demographics and chronic condition flags"
+      },
+      "BeneID": "Text | Unique identifier for each Medicare beneficiary (patient). Primary foreign key linking claims to demographics.",
+      "DOB": "Date | Date of birth. Used to derive patient age and validate age-appropriate procedures.",
+      "DOD": "Date | Date of death, if deceased. NULL if alive. Claims submitted after DOD are deterministic posthumous fraud.",
+      "Gender": "Numeric | 1=Male, 2=Female. Used to detect gender-inappropriate procedures being billed.",
+      "Race": "Numeric | 1=White, 2=Black, 3=Other, 5=Hispanic. Used for demographic distribution analysis.",
+      "State": "Numeric | US state code of beneficiary's residence. Used for geographic fraud concentration analysis.",
+      "County": "Numeric | County code within the state. Finer geographic granularity than state.",
+      "IsDeceased": "Boolean | Derived \u2014 1 if DOD is not null, 0 otherwise. Critical flag for posthumous billing detection.",
+      "Age": "Numeric | Derived \u2014 age calculated from DOB relative to dataset period (2009). Medicare beneficiaries are typically 65+.",
+      "NoOfMonths_PartACov": "Numeric | Months covered under Medicare Part A (hospital insurance). Range 0-12.",
+      "NoOfMonths_PartBCov": "Numeric | Months covered under Medicare Part B (medical insurance). Range 0-12.",
+      "IPAnnualReimbursementAmt": "Numeric | Total annual inpatient reimbursement amount for this beneficiary in USD.",
+      "IPAnnualDeductibleAmt": "Numeric | Total annual inpatient deductible paid by this beneficiary in USD.",
+      "OPAnnualReimbursementAmt": "Numeric | Total annual outpatient reimbursement amount for this beneficiary in USD.",
+      "OPAnnualDeductibleAmt": "Numeric | Total annual outpatient deductible paid by this beneficiary in USD.",
+      "RenalDiseaseIndicator": "Boolean | 1 if the beneficiary has chronic kidney/renal disease.",
+      "ChronicCond_Alzheimer": "Boolean | 1 if diagnosed with Alzheimer disease.",
+      "ChronicCond_Heartfailure": "Boolean | 1 if diagnosed with heart failure.",
+      "ChronicCond_KidneyDisease": "Boolean | 1 if diagnosed with chronic kidney disease.",
+      "ChronicCond_Cancer": "Boolean | 1 if diagnosed with cancer.",
+      "ChronicCond_ObstrPulmonary": "Boolean | 1 if diagnosed with chronic obstructive pulmonary disease (COPD).",
+      "ChronicCond_Depression": "Boolean | 1 if diagnosed with depression.",
+      "ChronicCond_Diabetes": "Boolean | 1 if diagnosed with diabetes.",
+      "ChronicCond_IschemicHeart": "Boolean | 1 if diagnosed with ischemic heart disease.",
+      "ChronicCond_Osteoporasis": "Boolean | 1 if diagnosed with osteoporosis.",
+      "ChronicCond_rheumatoidarthritis": "Boolean | 1 if diagnosed with rheumatoid arthritis.",
+      "ChronicCond_stroke": "Boolean | 1 if the beneficiary has had a stroke.",
+      "ChronicConditionCount": "Numeric | Derived \u2014 total count of active chronic conditions (sum of all ChronicCond_ flags). Range 0-11. Mismatch between condition count and billed procedures is a key fraud signal."
+    },
+    "Claim": {
+      "datasource": {
+        "tool_name": "query_claims_db",
+        "source_name": "claims_sql",
+        "simulates": "PostgreSQL claims database",
+        "key_fields": [
+          "ClaimID",
+          "Provider",
+          "BeneID"
+        ],
+        "join_keys": {
+          "Provider": "Provider",
+          "Beneficiary": "BeneID",
+          "Physician": "AttendingPhysician"
+        },
+        "description": "Inpatient and outpatient claim records"
+      },
+      "ClaimID": "Text | Unique identifier for each claim. Primary key.",
+      "BeneID": "Text | Foreign key to Beneficiary.",
+      "ProviderID": "Text | Foreign key to Provider.",
+      "ClaimStartDt": "Date | Date the claim period begins (first date of service).",
+      "ClaimEndDt": "Date | Date the claim period ends (last date of service).",
+      "ClaimDuration": "Numeric | Derived \u2014 days between ClaimStartDt and ClaimEndDt. Very short durations with high reimbursements = upcoding signal.",
+      "InscClaimAmtReimbursed": "Numeric | Total USD reimbursed by Medicare for this claim. Primary financial fraud signal.",
+      "DeductibleAmtPaid": "Numeric | USD deductible paid by the patient. Low deductibles with high reimbursements = inflated billing signal.",
+      "ClaimType": "Text | Derived \u2014 Inpatient or Outpatient."
+    },
+    "InpatientClaim": {
+      "datasource": {
+        "tool_name": "query_claims_db",
+        "source_name": "claims_sql",
+        "simulates": "PostgreSQL claims database",
+        "key_fields": [
+          "ClaimID"
+        ],
+        "default_filters": {
+          "claim_type": "Inpatient"
+        },
+        "join_keys": {
+          "Claim": "ClaimID"
+        },
+        "description": "Hospital admission claims only"
+      },
+      "ClaimID": "Text | Unique identifier for the inpatient claim. Subtype of Claim.",
+      "AdmissionDt": "Date | Date the patient was admitted to the hospital.",
+      "DischargeDt": "Date | Date the patient was discharged.",
+      "AdmissionDuration": "Numeric | Derived \u2014 days between AdmissionDt and DischargeDt. Very short stays (0-1 days) with high reimbursements = strongest upcoding signal.",
+      "AttendingPhysician": "Text | ID of the physician who supervised patient care during the hospital stay.",
+      "OperatingPhysician": "Text | ID of the physician who performed surgery. NULL if no surgery.",
+      "OtherPhysician": "Text | ID of any additional physician involved. NULL if not applicable.",
+      "ClmDiagnosisCode_1": "Text | Primary ICD-9 diagnosis code justifying the hospitalization.",
+      "ClmProcedureCode_1": "Text | Primary ICD-9 procedure code for the most significant procedure performed.",
+      "InscClaimAmtReimbursed": "Numeric | Total USD reimbursed for this inpatient stay. Legitimate range $0\u2013$20,000 depending on procedure; outliers warrant investigation.",
+      "DeductibleAmtPaid": "Numeric | Deductible paid by the patient for this stay.",
+      "DiagnosisGroupCode": "Text | DRG code classifying this inpatient case type for reimbursement purposes."
+    },
+    "OutpatientClaim": {
+      "datasource": {
+        "tool_name": "query_claims_db",
+        "source_name": "claims_sql",
+        "simulates": "PostgreSQL claims database",
+        "key_fields": [
+          "ClaimID"
+        ],
+        "default_filters": {
+          "claim_type": "Outpatient"
+        },
+        "join_keys": {
+          "Claim": "ClaimID"
+        },
+        "description": "Outpatient visit claims only"
+      },
+      "ClaimID": "Text | Unique identifier for the outpatient claim. Subtype of Claim.",
+      "ClaimStartDt": "Date | Date the outpatient service was provided.",
+      "ClaimEndDt": "Date | End date of the outpatient service period (often same as start for single-day visits).",
+      "AttendingPhysician": "Text | ID of the physician who attended the outpatient visit.",
+      "OperatingPhysician": "Text | ID of the physician who performed any procedures. NULL if none.",
+      "OtherPhysician": "Text | ID of any additional physician involved.",
+      "ClmDiagnosisCode_1": "Text | Primary ICD-9 diagnosis code justifying the outpatient visit.",
+      "ClmProcedureCode_1": "Text | Primary ICD-9 procedure code for the outpatient service.",
+      "InscClaimAmtReimbursed": "Numeric | Total USD reimbursed for this outpatient visit. Legitimate range under $3,500; amounts above are anomalous.",
+      "DeductibleAmtPaid": "Numeric | Deductible paid by the patient for this visit."
+    },
+    "Physician": {
+      "datasource": {
+        "tool_name": "query_physician_store",
+        "source_name": "physician_nosql",
+        "simulates": "MongoDB document store",
+        "key_fields": [
+          "PhysicianID"
+        ],
+        "join_keys": {
+          "Claim": "AttendingPhysician",
+          "Provider": "PhysicianID"
+        },
+        "description": "Physician network risk and fraud association features"
+      },
+      "PhysicianID": "Text | Unique identifier derived from AttendingPhysician field. Same physician can appear across multiple providers.",
+      "PhysicianRole": "Text | Role in the claim \u2014 Attending, Operating, or Other.",
+      "TotalPatientsAttended": "Numeric | Derived \u2014 total distinct patients attended. Unusually high counts suggest involvement in high-volume fraud.",
+      "TotalClaimsInvolved": "Numeric | Derived \u2014 total claims this physician appears in across all providers. Extremely high values indicate central role in a fraud network.",
+      "AvgReimbursementPerClaim": "Numeric | Derived \u2014 average USD reimbursement per claim. High values indicate association with expensive/fraudulent claims.",
+      "UniqueProvidersWorkedWith": "Numeric | Derived \u2014 number of distinct providers this physician has worked with. Physicians working across many providers simultaneously = organized fraud indicator.",
+      "FraudAssociationRate": "Numeric | Derived \u2014 proportion of claims involving this physician that belong to fraud-flagged providers. Range 0-1; values above 0.5 indicate predominantly fraudulent associations."
+    },
+    "DiagnosisCode": {
+      "datasource": {
+        "tool_name": "query_claims_db",
+        "source_name": "claims_sql",
+        "simulates": "PostgreSQL claims database",
+        "key_fields": [
+          "ClmDiagnosisCode_1"
+        ],
+        "join_keys": {
+          "Claim": "ClmDiagnosisCode_1"
+        },
+        "description": "ICD-9 diagnosis codes derived from claim records"
+      },
+      "DiagnosisCode": "Text | ICD-9 diagnosis code string identifying a specific medical condition.",
+      "DiagnosisDescription": "Text | Human-readable description of the ICD-9 code (e.g., 4019 = Unspecified essential hypertension).",
+      "FrequencyInFraudClaims": "Numeric | Derived \u2014 count of times this code appears in claims from fraud-flagged providers.",
+      "AvgReimbursementAmt": "Numeric | Derived \u2014 average USD reimbursement for claims using this diagnosis code. High-reimbursement diagnosis codes are preferred by fraudulent providers.",
+      "FraudRate": "Numeric | Derived \u2014 proportion of claims using this code that belong to fraud-flagged providers. Range 0-1."
+    },
+    "ProcedureCode": {
+      "datasource": {
+        "tool_name": "query_claims_db",
+        "source_name": "claims_sql",
+        "simulates": "PostgreSQL claims database",
+        "key_fields": [
+          "ClmProcedureCode_1"
+        ],
+        "join_keys": {
+          "Claim": "ClmProcedureCode_1"
+        },
+        "description": "ICD-9 procedure codes derived from claim records"
+      },
+      "ProcedureCode": "Text | ICD-9 procedure code string identifying a specific medical procedure.",
+      "ProcedureDescription": "Text | Human-readable description of the procedure code.",
+      "FrequencyInFraudClaims": "Numeric | Derived \u2014 count of times this procedure code appears in fraud-flagged provider claims.",
+      "AvgReimbursementAmt": "Numeric | Derived \u2014 average USD reimbursement for claims using this procedure. High-reimbursement procedures are commonly misused in upcoding fraud.",
+      "FraudRate": "Numeric | Derived \u2014 proportion of claims using this procedure that belong to fraud-flagged providers. Range 0-1."
+    },
+    "GeographicLocation": {
+      "datasource": {
+        "tool_name": "query_analytics_warehouse",
+        "source_name": "analytics_warehouse",
+        "simulates": "Snowflake analytics warehouse",
+        "key_fields": [
+          "ProviderState"
+        ],
+        "default_filters": {
+          "query_type": "geographic"
+        },
+        "join_keys": {
+          "Provider": "ProviderState",
+          "Beneficiary": "State"
+        },
+        "description": "Geographic fraud concentration by state"
+      },
+      "State": "Numeric | Numeric US state code.",
+      "County": "Numeric | Numeric county code within the state.",
+      "StateName": "Text | Human-readable state name derived from code mapping.",
+      "TotalProviders": "Numeric | Derived \u2014 total distinct providers operating in this state.",
+      "FraudProviderRate": "Numeric | Derived \u2014 proportion of providers in this state that are fraud-flagged. Range 0-1; high values indicate geographic fraud hotspots.",
+      "AvgReimbursementPerClaim": "Numeric | Derived \u2014 average USD reimbursement per claim for all claims from this state."
+    },
+    "TimeWindow": {
+      "datasource": {
+        "tool_name": "query_analytics_warehouse",
+        "source_name": "analytics_warehouse",
+        "simulates": "Snowflake analytics warehouse",
+        "key_fields": [
+          "ClaimYear",
+          "ClaimMonth",
+          "ClaimQuarter"
+        ],
+        "default_filters": {
+          "query_type": "time_window"
+        },
+        "join_keys": {
+          "Claim": "ClaimStartDt"
+        },
+        "description": "Pre-aggregated time-period fraud statistics"
+      },
+      "ClaimYear": "Numeric | Calendar year of the claim start date.",
+      "ClaimMonth": "Numeric | Calendar month (1-12) of the claim start date.",
+      "ClaimQuarter": "Numeric | Quarter (1-4) of the claim start date.",
+      "IsHolidayPeriod": "Boolean | Derived \u2014 1 if Q4 (Oct-Dec), 0 otherwise. Holiday periods may show different fraud patterns due to oversight changes.",
+      "AvgClaimsPerDay": "Numeric | Derived \u2014 average number of claims submitted per day in this period. Spikes indicate coordinated fraud bursts.",
+      "FraudRateInPeriod": "Numeric | Derived \u2014 proportion of claims in this period belonging to fraud-flagged providers."
+    }
+  },
+  "relationtrees": {
+    "description": "Directed paths through the ontology graph. Each path enables multi-hop hypothesis traversal. Minimum 4-hop paths are required for non-trivial AmbientOn hypotheses.",
+    "paths": [
+      {
+        "path": "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+        "hop_tools": [
+          "query_provider_db",
+          "query_claims_db"
+        ],
+        "join_on": "Provider"
+      },
+      {
+        "path": "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+        "hop_tools": [
+          "query_beneficiary_db",
+          "query_claims_db"
+        ],
+        "join_on": "BeneID"
+      },
+      {
+        "path": "(C:Claim)-[treated:treatedBy]-(PH:Physician)",
+        "hop_tools": [
+          "query_claims_db",
+          "query_physician_store"
+        ],
+        "join_on": "AttendingPhysician"
+      },
+      {
+        "path": "(C:Claim)-[coded:hasDiagnosis]-(D:DiagnosisCode)",
+        "hop_tools": [
+          "query_claims_db",
+          "query_claims_db"
+        ],
+        "join_on": "ClmDiagnosisCode_1"
+      },
+      {
+        "path": "(C:Claim)-[procedure:hasProcedure]-(PC:ProcedureCode)",
+        "hop_tools": [
+          "query_claims_db",
+          "query_claims_db"
+        ],
+        "join_on": "ClmProcedureCode_1"
+      },
+      {
+        "path": "(C:Claim)-[during:occurredDuring]-(TW:TimeWindow)",
+        "hop_tools": [
+          "query_claims_db",
+          "query_analytics_warehouse"
+        ],
+        "join_on": "ClaimStartDt"
+      },
+      {
+        "path": "(B:Beneficiary)-[located:locatedIn]-(GL:GeographicLocation)",
+        "hop_tools": [
+          "query_beneficiary_db",
+          "query_analytics_warehouse"
+        ],
+        "join_on": "State"
+      },
+      {
+        "path": "(P:Provider)-[operates:operatesIn]-(GL:GeographicLocation)",
+        "hop_tools": [
+          "query_provider_db",
+          "query_analytics_warehouse"
+        ],
+        "join_on": "ProviderState"
+      },
+      {
+        "path": "(IC:InpatientClaim)-[isA:isTypeOf]-(C:Claim)",
+        "hop_tools": [
+          "query_claims_db",
+          "query_claims_db"
+        ],
+        "join_on": "ClaimID"
+      },
+      {
+        "path": "(OC:OutpatientClaim)-[isA:isTypeOf]-(C:Claim)",
+        "hop_tools": [
+          "query_claims_db",
+          "query_claims_db"
+        ],
+        "join_on": "ClaimID"
+      },
+      {
+        "path": "(PH:Physician)-[worksFor:worksForProvider]-(P:Provider)",
+        "hop_tools": [
+          "query_physician_store",
+          "query_provider_db"
+        ],
+        "join_on": "PhysicianID"
+      },
+      {
+        "path": "(B:Beneficiary)-[has:hasChronicCondition]-(D:DiagnosisCode)",
+        "hop_tools": [
+          "query_beneficiary_db",
+          "query_claims_db"
+        ],
+        "join_on": "BeneID"
+      }
+    ],
+    "multi_hop_example_paths": [
+      "Provider \u2192 Claim \u2192 Beneficiary \u2192 ChronicCondition (4 hops): Are high-reimbursement providers billing patients whose chronic conditions do not justify the procedures?",
+      "Provider \u2192 Claim \u2192 Physician \u2192 Provider (4 hops): Are the same physicians appearing across multiple fraud-flagged providers \u2014 indicating an organized network?",
+      "Provider \u2192 Claim \u2192 DiagnosisCode \u2192 ProcedureCode (4 hops): Are providers billing high-reimbursement procedures for diagnoses that do not typically require them?",
+      "Beneficiary \u2192 Claim \u2192 TimeWindow \u2192 Provider (4 hops): Are deceased patients' claims being submitted after DOD, and which providers are responsible?",
+      "Provider \u2192 GeographicLocation \u2192 Provider \u2192 Claim (4 hops): Are geographically clustered providers showing correlated fraud patterns \u2014 indicating regional fraud rings?"
+    ]
+  },
+  "axioms": [
+    {
+      "axiom_id": "AX1",
+      "name": "Posthumous billing detection",
+      "rule": "IF Claim.ClaimStartDt > Beneficiary.DOD AND Beneficiary.IsDeceased = 1 THEN Claim.FraudType = 'PosthumousBilling' AND Claim.VerificationMethod = 'Deterministic'",
+      "confidence": 1.0,
+      "verification_type": "Deterministic"
+    },
+    {
+      "axiom_id": "AX2",
+      "name": "Reimbursement outlier detection",
+      "rule": "IF Claim.InscClaimAmtReimbursed > Q3(InscClaimAmtReimbursed | same DRG) + 1.5 * IQR(InscClaimAmtReimbursed | same DRG) THEN Claim.IsReimbursementOutlier = TRUE",
+      "confidence": 0.85,
+      "verification_type": "Statistical"
+    },
+    {
+      "axiom_id": "AX3",
+      "name": "Physician multi-provider flag",
+      "rule": "IF Physician.UniqueProvidersWorkedWith > 2 AND Physician.FraudAssociationRate > 0.5 THEN Physician.FraudNetworkRisk = 'High'",
+      "confidence": 0.78,
+      "verification_type": "Multi-hop",
+      "rationale": "Threshold relaxed from >5 to >2 providers based on empirical observation that the Kaggle dataset's physician network is sparse. A physician working across 3+ providers with >50% fraud association is still a strong organized fraud signal. Original threshold of >5 yielded 0 flagged physicians on this dataset."
+    },
+    {
+      "axiom_id": "AX4",
+      "name": "Procedure-diagnosis mismatch",
+      "rule": "IF ProcedureCode.ProcedureCode is NOT in expected_procedures_for(DiagnosisCode.DiagnosisCode) THEN Claim.FraudType = 'ProcedureDiagnosisMismatch'",
+      "confidence": 0.75,
+      "verification_type": "Deterministic"
+    },
+    {
+      "axiom_id": "AX5",
+      "name": "High-volume low-condition billing",
+      "rule": "IF Provider.TotalReimbursementAmt > PEER_95TH_PERCENTILE AND AVG(Beneficiary.ChronicConditionCount) < PEER_MEDIAN THEN Provider.FraudRiskScore += 0.2",
+      "confidence": 0.78,
+      "verification_type": "Statistical"
+    }
+  ],
+  "ground_truth_strategy": {
+    "primary": "PotentialFraud column (provider-level binary label) \u2014 direct verification oracle",
+    "secondary_statistical": "IQR outlier detection on InscClaimAmtReimbursed per DRG group \u2014 flags claim-level anomalies",
+    "secondary_temporal": "Rolling 4-week z-score on AvgClaimsPerDay per TimeWindow \u2014 flags burst patterns",
+    "secondary_deterministic": "ClaimStartDt > BeneDOD \u2014 deterministic posthumous fraud, no statistical test needed",
+    "evaluation_corpus_size": 400,
+    "expert_validation_sample": "10% (40 findings), 3 judges, majority vote"
+  },
+  "hypothesis_examples": [
+    "Providers billing high reimbursements for patients with no matching chronic conditions are likely committing upcoding fraud.",
+    "Physicians appearing across more than 5 providers with a fraud association rate above 0.5 are central nodes in an organized Medicare fraud network.",
+    "Claims submitted after a beneficiary's recorded date of death indicate posthumous billing \u2014 the provider is billing for services that were never rendered.",
+    "Providers in geographic clusters (same state/county) with correlated FraudRiskScores suggest regional fraud rings sharing billing patterns.",
+    "Outpatient claims with reimbursements above $3,500 using high-fraud-rate diagnosis codes indicate systematic upcoding of outpatient services as inpatient."
+  ]
+}
