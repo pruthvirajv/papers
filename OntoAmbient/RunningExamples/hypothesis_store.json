@@ -1,0 +1,1671 @@
+[
+  {
+    "finding_id": "F01",
+    "run_id": 1,
+    "finding_type": "GeographicFraudConcentration",
+    "entity_type": "GeographicLocation",
+    "deviation_ratio": 2.098,
+    "ground_truth_label": 1,
+    "gt_verdict": "WEAK",
+    "effect_size": 0.3035,
+    "confidence_score": 0.65,
+    "finding_description": "State 49 shows a provider fraud rate of 19.6% \u2014 2.1x the national average of 9.4%. Average provider reimbursement in this state is 1.2x the national median. 107 providers analysed. What is driving this geographic concentration of fraud?",
+    "orchestrator_context": {
+      "selected_paths": [
+        "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+        "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+        "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+      ],
+      "relevant_axioms": [
+        "AX2"
+      ],
+      "relevant_node_types": [
+        "Provider",
+        "Claim",
+        "Beneficiary"
+      ],
+      "investigation_focus": "State 49 shows a provider fraud rate of 19.6% \u2014 2.1x the national average of 9.4%. Average provider reimbursement in this state is 1.2x the national median. 107 providers analysed. What is driving this geographic concentration of fraud?",
+      "known_fraud_patterns": [
+        "upcoding",
+        "phantom procedures"
+      ],
+      "reasoning": "Fallback \u2014 JSON parse failed"
+    },
+    "hypotheses": [
+      {
+        "hypothesis_id": 1,
+        "statement": "Providers in State 49 systematically upcode routine procedures to higher-complexity billing codes, exploiting lax state-level auditing mechanisms to inflate reimbursements by 1.2x the national median without detection.",
+        "causal_chain": [
+          "State 49 has weaker regulatory oversight and audit frequency compared to national baseline",
+          "Providers learn they can bill higher-complexity codes without sufficient documentation review",
+          "Systematic upcoding becomes normalized practice across 107 providers",
+          "Average reimbursement rises to 1.2x national median while fraud rate reaches 19.6%"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "GeographicLocation"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[operates:operatesIn]-(GL:GeographicLocation)",
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Compare distribution of procedure codes billed in State 49 vs national distribution for same diagnosis codes",
+          "Analyze ratio of high-complexity codes to total claims per provider in State 49 vs other states",
+          "Check state audit frequency and enforcement action counts relative to provider population",
+          "Verify if providers billing highest-complexity codes have supporting documentation in medical records"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "provider_sql",
+          "analytics_warehouse"
+        ],
+        "plausibility_score": 0.82,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "State 49 has genuinely sicker patient population with more complex medical needs requiring higher reimbursement rates, reflected in legitimate chronic condition prevalence data.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 2,
+        "statement": "A coordinated fraud network of 15-25 providers in State 49 shares beneficiary lists and submits phantom procedures for the same patients, with network members cross-referring to create appearance of legitimate multi-provider care chains.",
+        "causal_chain": [
+          "Core group of 3-5 providers establishes fraud network in State 49",
+          "Network recruits additional providers through professional associations or shared billing companies",
+          "Members exchange beneficiary information and coordinate phantom billing across multiple provider IDs",
+          "Cross-referral patterns mask fraud as legitimate care coordination",
+          "Network effect amplifies individual fraud into 19.6% state-level concentration"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Beneficiary",
+          "Claim",
+          "GeographicLocation"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+          "(P:Provider)-[operates:operatesIn]-(GL:GeographicLocation)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify providers sharing abnormally high overlap in beneficiary populations",
+          "Detect clusters of providers with referral patterns forming closed loops",
+          "Check if same beneficiaries receive identical procedure codes from multiple providers on same dates",
+          "Analyze shared business infrastructure (billing addresses, phone numbers, ownership records)",
+          "Map temporal sequence of when providers in suspected network began fraud activity"
+        ],
+        "data_sources_to_query": [
+          "provider_sql",
+          "beneficiary_sql",
+          "claims_sql"
+        ],
+        "plausibility_score": 0.75,
+        "fraud_pattern_type": "fraud network",
+        "alternative_explanation": "State 49 has legitimate integrated care networks with high patient sharing due to rural geography forcing beneficiaries to travel to limited provider hubs.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 3,
+        "statement": "Providers in State 49 exploit a specific demographic vulnerability \u2014 billing phantom procedures for beneficiaries with cognitive impairment or limited English proficiency who cannot verify services received, concentrated in this state due to immigration patterns.",
+        "causal_chain": [
+          "State 49 has higher proportion of beneficiaries with cognitive impairment or language barriers",
+          "Providers identify these beneficiaries as low-risk targets unlikely to dispute bills",
+          "Systematic phantom billing targets this vulnerable population",
+          "Lack of beneficiary complaints prevents detection by traditional fraud systems",
+          "Geographic concentration emerges because demographic vulnerability is state-specific"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Beneficiary",
+          "Claim",
+          "GeographicLocation"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Compare chronic condition profiles of billed beneficiaries to state demographic baselines for cognitive impairment prevalence",
+          "Analyze beneficiary complaint rates in State 49 vs national average",
+          "Check if providers with highest fraud indicators disproportionately bill beneficiaries with Alzheimer's or dementia diagnosis codes",
+          "Verify service dates against beneficiary location data to confirm physical possibility of service delivery",
+          "Examine language concordance between provider and beneficiary populations"
+        ],
+        "data_sources_to_query": [
+          "beneficiary_sql",
+          "claims_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.68,
+        "fraud_pattern_type": "phantom procedures",
+        "alternative_explanation": "State 49 providers legitimately specialize in geriatric or immigrant healthcare, leading to higher billing volumes for these populations with genuinely higher service needs.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 4,
+        "statement": "State 49 providers systematically unbundle procedure codes \u2014 billing separately for component services that should be billed as single comprehensive codes \u2014 exploiting state-specific billing system configurations that fail to detect this pattern.",
+        "causal_chain": [
+          "State 49 Medicare administrative contractor uses legacy claim processing system with weak unbundling edits",
+          "Providers discover they can bill 3-5 separate codes for services that national guidelines bundle into single code",
+          "Each unbundled claim passes automated validation but total reimbursement exceeds legitimate bundled rate",
+          "Practice spreads through provider community via billing consultants",
+          "Aggregate effect produces 1.2x reimbursement elevation and 19.6% fraud rate"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "GeographicLocation"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(P:Provider)-[operates:operatesIn]-(GL:GeographicLocation)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify claims with procedure code combinations that violate national bundling guidelines",
+          "Compare frequency of unbundled billing patterns in State 49 vs other states for same diagnosis codes",
+          "Calculate reimbursement difference between unbundled claims and proper bundled equivalents",
+          "Check if State 49 administrative contractor has different edit configurations than national standard",
+          "Analyze temporal correlation between billing pattern changes and system update dates"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "provider_sql",
+          "analytics_warehouse"
+        ],
+        "plausibility_score": 0.79,
+        "fraud_pattern_type": "unbundling",
+        "alternative_explanation": "State 49 has unique population health characteristics requiring legitimately more component services that happen to appear as unbundling in aggregate analysis.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 5,
+        "statement": "Providers in State 49 engage in bilateral fraud agreements with a subset of beneficiaries \u2014 offering kickbacks or waived copayments in exchange for allowing providers to bill for unnecessary or phantom services \u2014 with state-specific economic conditions making beneficiaries more susceptible to such arrangements.",
+        "causal_chain": [
+          "State 49 has higher poverty rates or lower supplemental insurance coverage among Medicare beneficiaries",
+          "Economically vulnerable beneficiaries accept provider offers to waive copayments",
+          "In exchange, beneficiaries consent to providers billing for services not rendered or not medically necessary",
+          "Both parties benefit financially while Medicare absorbs fraudulent costs",
+          "Geographic concentration emerges because economic vulnerability is state-localized",
+          "Pattern spreads through beneficiary social networks creating fraud clusters"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Beneficiary",
+          "Claim",
+          "GeographicLocation"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+          "(P:Provider)-[operates:operatesIn]-(GL:GeographicLocation)"
+        ],
+        "evidence_needed_to_verify": [
+          "Analyze copayment waiver patterns in State 49 provider billing records",
+          "Check if beneficiaries billed by suspected providers have unusually low out-of-pocket costs",
+          "Identify beneficiaries receiving services from multiple high-fraud-rate providers",
+          "Compare State 49 poverty rates and supplemental insurance coverage to national baseline",
+          "Detect beneficiary clusters with shared addresses or social connections receiving similar fraudulent billing patterns",
+          "Review medical necessity of high-volume services billed to economically vulnerable beneficiaries"
+        ],
+        "data_sources_to_query": [
+          "beneficiary_sql",
+          "claims_sql",
+          "provider_sql",
+          "analytics_warehouse"
+        ],
+        "plausibility_score": 0.71,
+        "fraud_pattern_type": "beneficiary collusion",
+        "alternative_explanation": "State 49 providers offer legitimate financial assistance programs for low-income beneficiaries and provide genuinely needed services at higher volumes due to underserved population health needs.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      }
+    ],
+    "n_hypotheses": 5,
+    "avg_plausibility": 0.75,
+    "generation_time_s": 55.4,
+    "timestamp": "2026-04-20T21:39:46.710990",
+    "status": "SUCCESS"
+  },
+  {
+    "finding_id": "F03",
+    "run_id": 1,
+    "finding_type": "PhysicianNetworkFraudCorrelation",
+    "entity_type": "Physician",
+    "deviation_ratio": 9.26,
+    "ground_truth_label": 1,
+    "gt_verdict": "WEAK",
+    "effect_size": 0.4958,
+    "confidence_score": 0.65,
+    "finding_description": "Providers with 11-50 unique attending physicians show a fraud rate of 14.0% \u2014 9.3x higher than single-physician providers (1.5%). Does physician network size predict organised fraud rings where multiple physicians share billing across providers?",
+    "orchestrator_context": {
+      "selected_paths": [
+        "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+        "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+        "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+      ],
+      "relevant_axioms": [
+        "AX2"
+      ],
+      "relevant_node_types": [
+        "Provider",
+        "Claim",
+        "Beneficiary"
+      ],
+      "investigation_focus": "Providers with 11-50 unique attending physicians show a fraud rate of 14.0% \u2014 9.3x higher than single-physician providers (1.5%). Does physician network size predict organised fraud rings where multiple physicians share billing across providers?",
+      "known_fraud_patterns": [
+        "upcoding",
+        "phantom procedures"
+      ],
+      "reasoning": "Fallback \u2014 JSON parse failed"
+    },
+    "hypotheses": [
+      {
+        "hypothesis_id": 1,
+        "statement": "Providers with 11-50 attending physicians operate as coordinated fraud rings where multiple physicians rotate billing responsibilities across shared patient pools to obscure individual physician fraud patterns and evade detection thresholds.",
+        "causal_chain": [
+          "Provider recruits 11-50 physicians to join billing network",
+          "Physicians distribute fraudulent claims across their individual NPIs",
+          "Each physician stays below individual fraud detection thresholds",
+          "Aggregate provider-level fraud rate reaches 14.0% while individual physicians appear clean"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Physician",
+          "Claim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(PH:Physician)-[worksFor:worksForProvider]-(P:Provider)",
+          "(C:Claim)-[treated:treatedBy]-(PH:Physician)",
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Calculate per-physician fraud rate for physicians in 11-50 networks vs single-physician providers",
+          "Measure patient overlap across physicians within same provider",
+          "Check if physicians in high-network providers bill for same beneficiaries in rotating patterns",
+          "Compare claim distribution variance across physicians within provider"
+        ],
+        "data_sources_to_query": [
+          "physician_nosql",
+          "provider_sql",
+          "claims_sql",
+          "beneficiary_sql"
+        ],
+        "plausibility_score": 0.82,
+        "fraud_pattern_type": "fraud network",
+        "alternative_explanation": "Larger physician networks naturally serve more complex patient populations requiring specialized multi-physician care, leading to legitimate higher-cost billing patterns misclassified as fraud",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 2,
+        "statement": "Providers with 11-50 physicians systematically upcode claim severity by having one physician perform a basic service while a second physician in the network bills for a phantom higher-complexity procedure on the same beneficiary visit, exploiting multi-provider billing opacity.",
+        "causal_chain": [
+          "Provider employs 11-50 physicians creating billing complexity",
+          "Physician A submits legitimate low-value claim for beneficiary visit",
+          "Physician B submits inflated high-complexity claim for same visit",
+          "Claims processing systems fail to cross-reference multiple physicians treating same patient on same date",
+          "Provider receives reimbursement for both legitimate and upcoded phantom procedure"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Physician",
+          "Claim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(C:Claim)-[treated:treatedBy]-(PH:Physician)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify beneficiaries with multiple claims from different physicians at same provider on same service date",
+          "Compare procedure code complexity distribution for multi-physician same-day claims vs single-physician claims",
+          "Calculate reimbursement rate per beneficiary visit for 11-50 physician providers vs single-physician providers",
+          "Check for diagnosis code mismatches between paired same-day claims from different physicians"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "beneficiary_sql",
+          "physician_nosql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.78,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "Multi-physician providers legitimately treat more complex cases requiring same-day consultations from multiple specialists, resulting in higher but appropriate billing",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 3,
+        "statement": "Providers with 11-50 physicians engage in phantom procedure fraud by having non-rendering physicians submit claims for services they never performed, using the large physician roster to create plausible deniability about who actually treated which patients.",
+        "causal_chain": [
+          "Provider maintains roster of 11-50 physician NPIs",
+          "Subset of physicians actually render services to beneficiaries",
+          "Non-rendering physicians submit claims for phantom procedures on same beneficiaries",
+          "Large physician count makes auditor verification of individual physician-patient encounters infeasible",
+          "Provider collects reimbursement for services never rendered"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Physician",
+          "Claim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(PH:Physician)-[worksFor:worksForProvider]-(P:Provider)",
+          "(C:Claim)-[treated:treatedBy]-(PH:Physician)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Calculate claims-per-physician distribution within 11-50 physician providers to identify outlier low-volume physicians",
+          "Cross-reference physician specialty with procedure codes billed to detect specialty-procedure mismatches",
+          "Measure geographic distance between physician practice location and beneficiary residence for each claim",
+          "Check if certain physicians bill exclusively for high-reimbursement procedures while others bill routine care"
+        ],
+        "data_sources_to_query": [
+          "physician_nosql",
+          "claims_sql",
+          "beneficiary_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.75,
+        "fraud_pattern_type": "phantom procedures",
+        "alternative_explanation": "Providers with 11-50 physicians include legitimate multi-specialty group practices where some specialists naturally perform fewer but higher-value procedures than primary care physicians",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 4,
+        "statement": "Providers with 11-50 physicians exploit beneficiary assignment ambiguity by billing the same beneficiary under multiple physician NPIs for overlapping time periods, effectively double-billing for singular care episodes through physician identity fragmentation.",
+        "causal_chain": [
+          "Provider recruits 11-50 physicians creating large NPI pool",
+          "Beneficiary receives single care episode from one physician",
+          "Provider submits duplicate claims for same care episode under 2-3 different physician NPIs",
+          "Claims systems process each physician NPI independently without detecting duplicate care",
+          "Provider receives 2-3x reimbursement for single care episode"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Physician",
+          "Claim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+          "(C:Claim)-[treated:treatedBy]-(PH:Physician)",
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify beneficiaries with claims from multiple physicians at same provider with overlapping service date ranges",
+          "Calculate temporal overlap coefficient for multi-physician claims per beneficiary",
+          "Compare procedure code similarity across different physicians billing same beneficiary within 7-day windows",
+          "Measure average claims-per-beneficiary for 11-50 physician providers vs single-physician providers"
+        ],
+        "data_sources_to_query": [
+          "beneficiary_sql",
+          "claims_sql",
+          "physician_nosql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.71,
+        "fraud_pattern_type": "phantom procedures",
+        "alternative_explanation": "Beneficiaries with complex chronic conditions legitimately require coordinated care from multiple physicians at same provider, generating higher claim volumes through appropriate multi-disciplinary treatment",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 5,
+        "statement": "Providers with 11-50 physicians use physician network size as camouflage for identity theft fraud, where stolen beneficiary identities are distributed across multiple physician NPIs to reduce per-physician anomaly signals while maximizing fraudulent claim volume at the provider level.",
+        "causal_chain": [
+          "Provider obtains stolen beneficiary identities through data breach or insider access",
+          "Provider distributes phantom claims for stolen identities across 11-50 physician NPIs",
+          "Each physician bills 5-10 stolen identities keeping individual fraud signals low",
+          "Aggregate provider fraud rate reaches 14.0% through distributed identity theft",
+          "Large physician roster prevents pattern detection at individual physician level"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Physician",
+          "Claim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+          "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+        ],
+        "evidence_needed_to_verify": [
+          "Check for beneficiaries with claims at provider but no other healthcare utilization in claims history",
+          "Calculate percentage of beneficiaries per provider with single-encounter-only claim patterns",
+          "Measure geographic distance between beneficiary residence and provider location for all claims",
+          "Identify beneficiaries with simultaneous claims at multiple providers via different physicians",
+          "Compare beneficiary chronic condition prevalence for 11-50 physician providers vs baseline"
+        ],
+        "data_sources_to_query": [
+          "beneficiary_sql",
+          "claims_sql",
+          "physician_nosql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.68,
+        "fraud_pattern_type": "fraud network",
+        "alternative_explanation": "Providers with 11-50 physicians are more likely to be hospital-affiliated or multi-location practices that naturally attract transient or one-time patients seeking specialized care unavailable from single-physician providers",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      }
+    ],
+    "n_hypotheses": 5,
+    "avg_plausibility": 0.748,
+    "generation_time_s": 52.05,
+    "timestamp": "2026-04-20T21:40:39.272095",
+    "status": "SUCCESS"
+  },
+  {
+    "finding_id": "F05",
+    "run_id": 1,
+    "finding_type": "ChronicConditionMismatch",
+    "entity_type": "Beneficiary",
+    "deviation_ratio": 0.996,
+    "ground_truth_label": 1,
+    "gt_verdict": "WEAK",
+    "effect_size": -0.0302,
+    "confidence_score": 0.65,
+    "finding_description": "Fraud-flagged provider claims are submitted for patients with an average of 17.46 chronic conditions, compared to 17.53 for non-fraud providers (p=0.0000, t-test). 0.0% of fraud claims involve patients with zero recorded chronic conditions. Are fraud providers systematically billing expensive procedures for patients whose medical profiles do not justify them?",
+    "orchestrator_context": {
+      "selected_paths": [
+        "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+        "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+        "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+      ],
+      "relevant_axioms": [
+        "AX2"
+      ],
+      "relevant_node_types": [
+        "Provider",
+        "Claim",
+        "Beneficiary"
+      ],
+      "investigation_focus": "Fraud-flagged provider claims are submitted for patients with an average of 17.46 chronic conditions, compared to 17.53 for non-fraud providers (p=0.0000, t-test). 0.0% of fraud claims involve patients with zero recorded chronic conditions. Are fraud providers systematically billing expensive procedures for patients whose medical profiles do not justify them?",
+      "known_fraud_patterns": [
+        "upcoding",
+        "phantom procedures"
+      ],
+      "reasoning": "Fallback \u2014 JSON parse failed"
+    },
+    "hypotheses": [
+      {
+        "hypothesis_id": 1,
+        "statement": "Fraud-flagged providers are selectively targeting beneficiaries with extremely high chronic condition counts (17+ conditions) to justify billing for medically unnecessary high-cost procedures, exploiting the complexity of multi-morbid patient profiles to obscure fraudulent upcoding.",
+        "causal_chain": [
+          "Provider identifies beneficiaries with 17+ documented chronic conditions",
+          "Provider bills for expensive procedures claiming medical necessity based on chronic condition complexity",
+          "High chronic condition count masks upcoding because reviewers assume complex patients justify expensive treatments",
+          "Results in fraud claims clustering around patients with very high chronic condition averages"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "Beneficiary",
+          "DiagnosisCode"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasChronicCondition]-(D:DiagnosisCode)"
+        ],
+        "evidence_needed_to_verify": [
+          "Compare procedure costs for fraud vs non-fraud claims within the same chronic condition count bracket (17-18 conditions)",
+          "Identify if fraud providers bill higher-cost procedure codes than non-fraud providers for patients with identical chronic condition profiles",
+          "Check if fraud claims have higher rates of optional/elective procedures compared to medically necessary procedures for multi-morbid patients"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "beneficiary_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.72,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "Fraud-flagged providers may legitimately specialize in treating the most medically complex patients (17+ conditions) who genuinely require expensive interventions, and the fraud flags are false positives based on other unrelated factors.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 2,
+        "statement": "Fraud providers are fabricating chronic condition diagnoses on patient records to create artificial medical justification for phantom procedures that were never performed, resulting in fraud claims having uniformly high chronic condition counts with zero patients showing healthy profiles.",
+        "causal_chain": [
+          "Provider fabricates or inflates chronic condition diagnoses in beneficiary records",
+          "Fabricated conditions create paper trail justifying expensive procedures",
+          "Provider bills for phantom procedures that were never rendered",
+          "All fraud claims show high chronic condition counts because provider never bills for healthy patients (0 conditions), only fabricated complex cases"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "Beneficiary",
+          "DiagnosisCode"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasChronicCondition]-(D:DiagnosisCode)"
+        ],
+        "evidence_needed_to_verify": [
+          "Cross-reference chronic condition diagnoses with other providers treating the same beneficiaries to detect diagnosis inflation",
+          "Check if fraud provider's patients show sudden spikes in chronic condition counts coinciding with high-cost claim submissions",
+          "Verify if procedures billed align with standard treatment protocols for the documented chronic conditions",
+          "Investigate if 0.0% rate of zero-condition patients is statistically anomalous compared to provider's patient demographic catchment area"
+        ],
+        "data_sources_to_query": [
+          "beneficiary_sql",
+          "claims_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.68,
+        "fraud_pattern_type": "phantom procedures",
+        "alternative_explanation": "The provider operates in a geographic region or facility type (e.g., skilled nursing facility) where all patients inherently have multiple chronic conditions, making zero-condition patients structurally impossible in their patient population.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 3,
+        "statement": "Fraud providers are cherry-picking beneficiaries who already have high chronic condition counts documented by other legitimate providers, then submitting duplicate or medically unnecessary claims for the same conditions without providing actual services, exploiting existing medical complexity to hide redundant billing.",
+        "causal_chain": [
+          "Legitimate providers document 17+ chronic conditions for medically complex beneficiaries",
+          "Fraud provider identifies these beneficiaries through shared networks or data access",
+          "Fraud provider submits claims for treating the same chronic conditions without rendering services",
+          "Redundant claims blend into legitimate treatment patterns because chronic condition profiles match expected complexity"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "Beneficiary",
+          "DiagnosisCode",
+          "Physician"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+          "(C:Claim)-[treated:treatedBy]-(PH:Physician)",
+          "(B:Beneficiary)-[has:hasChronicCondition]-(D:DiagnosisCode)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify beneficiaries who received claims from both fraud and non-fraud providers for the same chronic conditions within overlapping time windows",
+          "Check if fraud providers bill for services that duplicate treatments already provided by other providers to the same patient",
+          "Analyze if fraud provider claims show lower service intensity or shorter visit durations despite billing for complex chronic condition management"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "beneficiary_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.65,
+        "fraud_pattern_type": "phantom procedures",
+        "alternative_explanation": "Beneficiaries with 17+ chronic conditions legitimately require care from multiple specialists, and fraud-flagged providers are part of coordinated care teams where overlapping claims represent appropriate multi-provider treatment rather than fraud.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 4,
+        "statement": "The negligible difference in chronic condition averages (17.46 vs 17.53) indicates fraud providers are deliberately matching the chronic condition distribution of legitimate providers to evade detection algorithms, while the actual fraud mechanism operates independently of patient health status through systematic upcoding of procedure codes.",
+        "causal_chain": [
+          "Fraud provider analyzes non-fraud provider chronic condition distributions to establish baseline camouflage",
+          "Fraud provider selects patient mix that mirrors legitimate provider chronic condition averages",
+          "With patient profiles normalized, fraud provider upcodes procedure billing codes regardless of chronic condition justification",
+          "Statistical tests show no chronic condition mismatch because provider intentionally matched distributions to hide other fraud mechanisms"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "Beneficiary",
+          "DiagnosisCode"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasChronicCondition]-(D:DiagnosisCode)"
+        ],
+        "evidence_needed_to_verify": [
+          "Compare procedure code distributions between fraud and non-fraud providers for patients with identical chronic condition counts",
+          "Check if fraud providers show higher reimbursement per claim despite matching chronic condition complexity",
+          "Analyze if fraud provider billing patterns show procedure code escalation (e.g., billing level 5 visits instead of level 3) independent of chronic condition changes",
+          "Test if chronic condition distributions are suspiciously uniform across fraud provider's patient population compared to natural variation in non-fraud providers"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "beneficiary_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.78,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "Both fraud and non-fraud providers treat similar patient populations from the same geographic or demographic pool, resulting in naturally identical chronic condition distributions, and fraud flags are based on unrelated administrative errors rather than intentional fraud.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 5,
+        "statement": "Fraud providers are operating within organized networks that strategically refer beneficiaries with high chronic condition counts between colluding entities to generate multiple fraudulent claims per patient, with the 17.46 average representing deliberate patient selection criteria used across the fraud network to maximize per-beneficiary revenue.",
+        "causal_chain": [
+          "Fraud network establishes referral scheme targeting beneficiaries with 17+ chronic conditions",
+          "Network members pass the same high-complexity patients between colluding providers",
+          "Each provider in network submits inflated or phantom claims for the shared patient pool",
+          "Chronic condition average remains stable at 17.46 because network systematically filters for this patient profile to justify expensive billing across multiple entities"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "Beneficiary",
+          "DiagnosisCode",
+          "Physician"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+          "(C:Claim)-[treated:treatedBy]-(PH:Physician)",
+          "(B:Beneficiary)-[has:hasChronicCondition]-(D:DiagnosisCode)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify beneficiaries who appear in claims from multiple fraud-flagged providers within short time periods",
+          "Map referral patterns between fraud-flagged providers to detect circular or reciprocal referral relationships",
+          "Check if physicians associated with fraud claims appear across multiple fraud-flagged provider entities",
+          "Analyze if beneficiaries with exactly 17-18 chronic conditions are disproportionately shared among fraud providers compared to random distribution"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "beneficiary_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.71,
+        "fraud_pattern_type": "fraud network",
+        "alternative_explanation": "Beneficiaries with 17+ chronic conditions require specialized multi-disciplinary care that naturally involves multiple providers in legitimate coordinated care networks, and fraud flags represent regulatory misclassification of complex but appropriate care coordination.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      }
+    ],
+    "n_hypotheses": 5,
+    "avg_plausibility": 0.708,
+    "generation_time_s": 57.52,
+    "timestamp": "2026-04-20T21:41:37.304375",
+    "status": "SUCCESS"
+  },
+  {
+    "finding_id": "F06",
+    "run_id": 1,
+    "finding_type": "ShortAdmissionHighReimbursement",
+    "entity_type": "InpatientClaim",
+    "deviation_ratio": 1.028,
+    "ground_truth_label": 1,
+    "gt_verdict": "WEAK",
+    "effect_size": 0.0325,
+    "confidence_score": 0.65,
+    "finding_description": "12.8% of inpatient claims have admission duration of 0-1 days yet average reimbursement of $7,166 \u2014 compared to $10,518 for longer stays. Short-stay claims have a fraud rate of 59.2% vs 57.6% for longer stays. Are providers billing inpatient-level reimbursements for effectively outpatient procedures?",
+    "orchestrator_context": {
+      "selected_paths": [
+        "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+        "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+        "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+      ],
+      "relevant_axioms": [
+        "AX2"
+      ],
+      "relevant_node_types": [
+        "Provider",
+        "Claim",
+        "Beneficiary"
+      ],
+      "investigation_focus": "12.8% of inpatient claims have admission duration of 0-1 days yet average reimbursement of $7,166 \u2014 compared to $10,518 for longer stays. Short-stay claims have a fraud rate of 59.2% vs 57.6% for longer stays. Are providers billing inpatient-level reimbursements for effectively outpatient procedures?",
+      "known_fraud_patterns": [
+        "upcoding",
+        "phantom procedures"
+      ],
+      "reasoning": "Fallback \u2014 JSON parse failed"
+    },
+    "hypotheses": [
+      {
+        "hypothesis_id": 1,
+        "statement": "Providers are systematically misclassifying outpatient procedures as inpatient admissions by admitting patients shortly before midnight and discharging them after midnight, creating a technical 'inpatient stay' of 0-1 days while billing full inpatient DRG reimbursements instead of lower outpatient APCs.",
+        "causal_chain": [
+          "Provider identifies high-reimbursement procedures typically done outpatient",
+          "Provider admits patient at 11:45 PM and discharges at 12:30 AM next day",
+          "Claim system records 0-1 day inpatient stay with full inpatient DRG code",
+          "Provider receives $7,166 average reimbursement instead of outpatient rate",
+          "Pattern creates 59.2% fraud rate in short-stay cohort"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "InpatientClaim",
+          "Claim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(IC:InpatientClaim)",
+          "(IC:InpatientClaim)-[isA:isTypeOf]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(IC:InpatientClaim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Extract admission and discharge timestamps for 0-1 day stays to identify midnight-spanning patterns",
+          "Compare procedure codes on short-stay inpatient claims against CMS inpatient-only list",
+          "Calculate proportion of short-stay admissions occurring between 10 PM-2 AM",
+          "Cross-reference same procedures billed as outpatient by peer providers"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.88,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "Legitimate emergency admissions for observation that require brief inpatient monitoring (e.g., chest pain rule-out, syncope workup) where patients stabilize quickly and are appropriately discharged within 24 hours under clinical protocols",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 2,
+        "statement": "Providers are billing inpatient admissions for same-day surgical procedures that should be outpatient, exploiting the 'two-midnight rule' exception by fabricating medical necessity documentation claiming patients were too unstable for same-day discharge despite procedures being on the outpatient-approved list.",
+        "causal_chain": [
+          "Provider performs elective procedure from CMS outpatient-approved list",
+          "Provider creates false documentation of complications or comorbidities requiring overnight stay",
+          "Claim submitted as inpatient with 0-1 day duration",
+          "Medical necessity review bypassed due to documentation",
+          "Provider captures inpatient reimbursement differential over outpatient rate"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "InpatientClaim",
+          "Claim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(IC:InpatientClaim)",
+          "(B:Beneficiary)-[has:hasClaim]-(IC:InpatientClaim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify procedure codes on short-stay claims and match against CMS outpatient-only procedure list",
+          "Review diagnosis codes on short-stay claims for presence of complication/comorbidity codes",
+          "Compare complication rates on short-stay vs long-stay claims for same procedures",
+          "Audit medical records for documented medical necessity justifications"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "provider_sql",
+          "beneficiary_sql"
+        ],
+        "plausibility_score": 0.82,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "Patients legitimately have higher comorbidity burden or post-procedure complications requiring brief monitoring that falls within clinical guidelines, with proper documentation supporting medical necessity for inpatient admission",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 3,
+        "statement": "A network of providers and physicians are coordinating phantom short-stay admissions where beneficiaries are never actually admitted to inpatient units but claims are submitted with fabricated 0-1 day stays, keeping durations minimal to avoid triggering medical record audits while still capturing inpatient reimbursement rates.",
+        "causal_chain": [
+          "Physician identifies beneficiaries willing to participate or uses stolen beneficiary identities",
+          "Provider submits inpatient claim with 0-1 day stay without actual admission occurring",
+          "Short duration minimizes audit risk compared to longer fabricated stays",
+          "Physician and provider split the $7,166 average reimbursement",
+          "Pattern repeated across multiple beneficiaries creates 59.2% fraud rate signal"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "InpatientClaim",
+          "Claim",
+          "Beneficiary",
+          "Physician"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(IC:InpatientClaim)",
+          "(B:Beneficiary)-[has:hasClaim]-(IC:InpatientClaim)",
+          "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+        ],
+        "evidence_needed_to_verify": [
+          "Check for beneficiaries with multiple short-stay inpatient claims across different providers within short timeframes",
+          "Identify physicians appearing on short-stay claims across multiple unaffiliated providers",
+          "Cross-reference claimed admission dates against beneficiary outpatient visit records or pharmacy fills indicating they were not hospitalized",
+          "Map network connections between high-short-stay-rate providers and physicians"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "provider_sql",
+          "beneficiary_sql"
+        ],
+        "plausibility_score": 0.75,
+        "fraud_pattern_type": "phantom procedures",
+        "alternative_explanation": "Beneficiaries with complex chronic conditions require frequent brief inpatient stabilization episodes across different facilities as they travel or move between care settings, with legitimate clinical need for each admission",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 4,
+        "statement": "Providers are exploiting the inpatient/outpatient reimbursement gap by selectively admitting healthier beneficiaries for procedures that can be completed in 0-1 days, avoiding sicker patients who would require longer stays, thereby gaming the system to maximize the ratio of inpatient reimbursements to actual resource utilization.",
+        "causal_chain": [
+          "Provider screens beneficiaries to identify those with minimal comorbidities",
+          "Provider selectively admits only healthy patients for procedures billable as inpatient",
+          "Healthy patients are discharged within 0-1 days as expected",
+          "Provider captures full inpatient reimbursement with minimal resource cost",
+          "Sicker patients requiring longer stays are referred elsewhere or scheduled as outpatient",
+          "Pattern creates concentration of short-stay claims with high reimbursement-to-cost ratio"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "InpatientClaim",
+          "Claim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(IC:InpatientClaim)",
+          "(B:Beneficiary)-[has:hasClaim]-(IC:InpatientClaim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Compare chronic condition counts and risk scores of beneficiaries on short-stay vs long-stay claims within same provider",
+          "Analyze provider case-mix index for short-stay admissions vs facility average",
+          "Identify providers with abnormally high proportion of short-stay claims relative to peer facilities",
+          "Check if providers have lower-than-expected long-stay admission rates for high-risk procedures"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "provider_sql",
+          "beneficiary_sql"
+        ],
+        "plausibility_score": 0.71,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "Provider specializes in minimally invasive techniques or has superior care coordination that legitimately enables faster recovery and discharge for all patients regardless of risk profile, representing clinical excellence rather than fraud",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 5,
+        "statement": "Providers are billing short-stay inpatient claims for beneficiaries who were actually treated in emergency departments or observation units, exploiting ambiguity in admission status by retroactively converting observation stays to inpatient admissions after determining which billing code yields higher reimbursement, without actual inpatient bed utilization.",
+        "causal_chain": [
+          "Beneficiary presents to emergency department or placed in observation status",
+          "Provider evaluates potential reimbursement under observation vs inpatient billing",
+          "Provider retroactively changes admission status to inpatient for higher-paying cases",
+          "Claim submitted as 0-1 day inpatient stay with inpatient DRG code",
+          "Provider receives $7,166 average instead of lower observation/ED reimbursement",
+          "Pattern creates fraud signal as observation-to-inpatient conversions concentrate in short-stay category"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "InpatientClaim",
+          "Claim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(IC:InpatientClaim)",
+          "(B:Beneficiary)-[has:hasClaim]-(IC:InpatientClaim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify short-stay inpatient claims with ED or observation revenue codes present on same claim",
+          "Compare timing of admission order entry vs claim submission to detect retroactive status changes",
+          "Analyze providers with high rates of observation-to-inpatient conversions",
+          "Check for patterns where conversion decisions correlate with reimbursement differentials rather than clinical changes"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.79,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "Patients initially placed in observation legitimately deteriorate or develop complications requiring inpatient admission upgrade within the first 24 hours, with clinical documentation supporting the medical necessity of status change per CMS guidelines",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      }
+    ],
+    "n_hypotheses": 5,
+    "avg_plausibility": 0.79,
+    "generation_time_s": 58.47,
+    "timestamp": "2026-04-20T21:42:36.285438",
+    "status": "SUCCESS"
+  },
+  {
+    "finding_id": "F07",
+    "run_id": 1,
+    "finding_type": "PeerGroupReimbursementDeviation",
+    "entity_type": "Provider",
+    "deviation_ratio": 11.99,
+    "ground_truth_label": 1,
+    "gt_verdict": "CONFIRMED",
+    "effect_size": -0.6629,
+    "confidence_score": 0.84,
+    "finding_description": "Providers in the top 5% of reimbursement vs state peer median bill on average 53.5x their state peers and show a fraud rate of 72.3% \u2014 compared to 6.0% for providers billing within peer norms. 271 providers identified. Does extreme peer group deviation systematically predict fraud beyond what absolute reimbursement levels reveal?",
+    "orchestrator_context": {
+      "selected_paths": [
+        "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+        "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+        "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+      ],
+      "relevant_axioms": [
+        "AX2"
+      ],
+      "relevant_node_types": [
+        "Provider",
+        "Claim",
+        "Beneficiary"
+      ],
+      "investigation_focus": "Providers in the top 5% of reimbursement vs state peer median bill on average 53.5x their state peers and show a fraud rate of 72.3% \u2014 compared to 6.0% for providers billing within peer norms. 271 providers identified. Does extreme peer group deviation systematically predict fraud beyond what absolute reimbursement levels reveal?",
+      "known_fraud_patterns": [
+        "upcoding",
+        "phantom procedures"
+      ],
+      "reasoning": "Fallback \u2014 JSON parse failed"
+    },
+    "hypotheses": [
+      {
+        "hypothesis_id": 1,
+        "statement": "Providers in the top 5% of peer group reimbursement deviation systematically upcode low-complexity procedures to high-complexity billing codes, exploiting geographic peers who lack subspecialty capabilities, thereby generating reimbursements 53.5x higher than legitimate state peer medians.",
+        "causal_chain": [
+          "Provider identifies low-scrutiny geographic market with general practitioners as peer baseline",
+          "Provider systematically bills CPT codes 2-3 complexity tiers above actual service rendered",
+          "Reimbursement per claim inflates 3-5x per upcoded procedure",
+          "Aggregate reimbursement reaches 53.5x state peer median while claim volume remains normal",
+          "72.3% fraud rate emerges from sustained upcoding pattern across claim portfolio"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "GeographicLocation"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[operates:operatesIn]-(GL:GeographicLocation)",
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Compare CPT code complexity distribution for top-5% providers vs their state peer median",
+          "Calculate average reimbursement per CPT code category for deviating providers vs peers",
+          "Identify if top-5% providers cluster in markets with lower baseline peer sophistication",
+          "Check if diagnosis codes support the billed procedure complexity levels"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "provider_sql",
+          "analytics_warehouse"
+        ],
+        "plausibility_score": 0.88,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "Providers may legitimately specialize in high-complexity tertiary care within states dominated by primary care peers, creating valid reimbursement differentials without fraud",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 2,
+        "statement": "Providers showing extreme peer deviation operate phantom procedure schemes where they bill for services never rendered to beneficiaries who exist but never received care, using the peer group baseline as camouflage to avoid absolute reimbursement threshold triggers.",
+        "causal_chain": [
+          "Provider enrolls legitimate beneficiaries through marketing or data acquisition",
+          "Provider submits claims for procedures never performed to these beneficiaries",
+          "Per-beneficiary billing stays below absolute fraud triggers but exceeds peer norms by 53.5x",
+          "Geographic peer baseline remains artificially low, masking phantom billing in peer comparisons",
+          "Beneficiary complaints remain low due to no out-of-pocket costs in Medicare",
+          "72.3% fraud rate reflects systematic phantom billing across beneficiary portfolio"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Cross-reference beneficiary addresses with provider service locations to detect impossible travel patterns",
+          "Check if beneficiaries billed by top-5% providers have claims with other providers in same time windows",
+          "Verify if beneficiaries have chronic conditions matching billed procedure medical necessity",
+          "Identify beneficiaries with zero prior claim history suddenly showing high-cost procedures"
+        ],
+        "data_sources_to_query": [
+          "beneficiary_sql",
+          "claims_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.79,
+        "fraud_pattern_type": "phantom procedures",
+        "alternative_explanation": "Providers may serve beneficiaries who travel long distances for specialized legitimate care unavailable in their home regions, creating geographic mismatches without fraud",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 3,
+        "statement": "Providers in the top 5% deviation tier operate as central nodes in fraud networks, coordinating with multiple physicians to distribute billing across shared beneficiary pools, where peer comparison fails because the entire network inflates reimbursement collectively rather than individually.",
+        "causal_chain": [
+          "Provider entity serves as billing hub for 5-15 physicians with fraud history",
+          "Physicians rotate beneficiaries across the provider network to fragment audit trails",
+          "Each physician bills subset of shared beneficiary pool at inflated rates",
+          "Aggregate provider reimbursement reaches 53.5x peer median through network multiplication effect",
+          "Individual physician billing stays below detection thresholds while provider-level aggregation reveals fraud",
+          "72.3% fraud rate reflects coordinated network activity rather than isolated provider behavior"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Physician",
+          "Claim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(C:Claim)-[treated:treatedBy]-(PH:Physician)",
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify physicians appearing across multiple top-5% deviation providers",
+          "Calculate beneficiary overlap rates between physicians within same provider entity",
+          "Check if physicians associated with top-5% providers have prior fraud flags",
+          "Measure claim submission timing patterns for evidence of coordinated batch billing"
+        ],
+        "data_sources_to_query": [
+          "provider_sql",
+          "claims_sql",
+          "analytics_warehouse"
+        ],
+        "plausibility_score": 0.82,
+        "fraud_pattern_type": "fraud network",
+        "alternative_explanation": "Large multi-specialty group practices legitimately employ many physicians and serve overlapping patient populations for coordinated care, creating network patterns without fraud intent",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 4,
+        "statement": "Providers exceeding peer norms by 53.5x exploit beneficiaries with cognitive impairment or limited healthcare literacy, billing for unnecessary high-cost procedures that beneficiaries cannot evaluate for medical necessity, where peer comparison reveals exploitation invisible in diagnosis code analysis alone.",
+        "causal_chain": [
+          "Provider targets beneficiaries with dementia, Alzheimer's, or low health literacy markers",
+          "Provider recommends and bills for medically unnecessary high-reimbursement procedures",
+          "Beneficiary lacks capacity to question medical necessity or seek second opinions",
+          "Diagnosis codes appear valid but procedures are clinically unjustified for severity level",
+          "Reimbursement inflates to 53.5x peer median through volume of unnecessary high-cost interventions",
+          "72.3% fraud rate emerges from systematic exploitation of vulnerable beneficiary cognitive state"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Beneficiary",
+          "Claim"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify beneficiaries with cognitive impairment diagnoses in top-5% provider claim portfolios",
+          "Compare procedure medical necessity scores for these beneficiaries vs clinical guidelines",
+          "Check if top-5% providers have higher rates of repeat procedures on same beneficiaries",
+          "Measure beneficiary complaint rates or family-initiated fraud reports for these providers"
+        ],
+        "data_sources_to_query": [
+          "beneficiary_sql",
+          "claims_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.74,
+        "fraud_pattern_type": "medically unnecessary services",
+        "alternative_explanation": "Providers specializing in geriatric or dementia care may legitimately serve higher proportions of cognitively impaired patients requiring intensive legitimate medical intervention",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 5,
+        "statement": "Providers in the top 5% peer deviation tier operate in geographic locations with systematically understaffed or under-resourced peer groups, allowing them to bill at urban specialty rates while operating in rural markets where peer baseline is artificially deflated by primary care dominance, masking fraud through geographic arbitrage.",
+        "causal_chain": [
+          "Provider identifies rural or underserved geographic market with low peer baseline reimbursement",
+          "Provider bills using urban specialty CPT codes and fee schedules inappropriate for market",
+          "State peer median remains artificially low due to rural primary care provider dominance",
+          "Reimbursement reaches 53.5x peer median through geographic fee schedule mismatch",
+          "Peer comparison flags deviation while absolute reimbursement stays below urban fraud thresholds",
+          "72.3% fraud rate reflects systematic geographic arbitrage across provider's claim portfolio"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "GeographicLocation",
+          "Claim"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[operates:operatesIn]-(GL:GeographicLocation)",
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Compare geographic location characteristics for top-5% providers vs their state peer groups",
+          "Identify if top-5% providers cluster in rural areas with urban billing patterns",
+          "Check if billed CPT codes match provider's registered specialty and geographic market norms",
+          "Calculate reimbursement-per-claim for top-5% providers vs both state and national specialty peers"
+        ],
+        "data_sources_to_query": [
+          "provider_sql",
+          "analytics_warehouse",
+          "claims_sql"
+        ],
+        "plausibility_score": 0.81,
+        "fraud_pattern_type": "geographic arbitrage fraud",
+        "alternative_explanation": "Providers may legitimately bring subspecialty expertise to underserved rural markets, billing appropriately for complex services unavailable from local peers, creating valid reimbursement differentials",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      }
+    ],
+    "n_hypotheses": 5,
+    "avg_plausibility": 0.808,
+    "generation_time_s": 56.86,
+    "timestamp": "2026-04-20T21:43:33.654427",
+    "status": "SUCCESS"
+  },
+  {
+    "finding_id": "F08",
+    "run_id": 1,
+    "finding_type": "DiagnosisCodeFraudConcentration",
+    "entity_type": "DiagnosisCode",
+    "deviation_ratio": 1.677,
+    "ground_truth_label": 1,
+    "gt_verdict": "WEAK",
+    "effect_size": 0.0146,
+    "confidence_score": 0.65,
+    "finding_description": "The top 5 diagnosis codes by fraud rate show an average fraud association of 63.9% \u2014 1.7x the overall rate of 38.1%. These codes (including 44024, 55221) average $12,830 per claim. Are specific diagnosis codes being systematically exploited to justify high-reimbursement claims across fraud providers?",
+    "orchestrator_context": {
+      "selected_paths": [
+        "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+        "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+        "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+      ],
+      "relevant_axioms": [
+        "AX2"
+      ],
+      "relevant_node_types": [
+        "Provider",
+        "Claim",
+        "Beneficiary"
+      ],
+      "investigation_focus": "The top 5 diagnosis codes by fraud rate show an average fraud association of 63.9% \u2014 1.7x the overall rate of 38.1%. These codes (including 44024, 55221) average $12,830 per claim. Are specific diagnosis codes being systematically exploited to justify high-reimbursement claims across fraud providers?",
+      "known_fraud_patterns": [
+        "upcoding",
+        "phantom procedures"
+      ],
+      "reasoning": "Fallback \u2014 JSON parse failed"
+    },
+    "hypotheses": [
+      {
+        "hypothesis_id": 1,
+        "statement": "Providers systematically select diagnosis codes 44024 and 55221 to justify high-reimbursement surgical claims for beneficiaries who lack the chronic conditions or clinical history that would medically necessitate these procedures, constituting upcoding fraud.",
+        "causal_chain": [
+          "Provider identifies high-reimbursement diagnosis codes (44024, 55221) averaging $12,830 per claim",
+          "Provider assigns these codes to claims for beneficiaries without matching chronic conditions",
+          "Claims pass initial automated review due to valid code structure",
+          "Fraudulent claims cluster around these specific codes, creating 63.9% fraud association rate"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "DiagnosisCode",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(C:Claim)-[coded:hasDiagnosis]-(D:DiagnosisCode)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasChronicCondition]-(D:DiagnosisCode)"
+        ],
+        "evidence_needed_to_verify": [
+          "Compare chronic condition profiles of beneficiaries billed with codes 44024/55221 versus clinical guidelines for these diagnoses",
+          "Calculate proportion of claims using these codes where beneficiary has zero matching chronic conditions",
+          "Identify providers with abnormally high usage rates of these specific codes relative to specialty peer group"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "beneficiary_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.82,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "These diagnosis codes genuinely correlate with complex cases requiring specialized providers who happen to serve higher-risk beneficiary populations with incomplete chronic condition documentation in the dataset.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 2,
+        "statement": "A coordinated fraud network of providers shares knowledge of which diagnosis codes (44024, 55221) trigger minimal auditing scrutiny while maximizing reimbursement, leading to concentrated exploitation of these codes across multiple fraudulent entities.",
+        "causal_chain": [
+          "Fraud network identifies diagnosis codes with high reimbursement and low historical audit rates",
+          "Network members coordinate to systematically bill these codes across their collective patient base",
+          "Shared fraudulent billing practices create abnormal concentration pattern",
+          "Top 5 codes show 1.7x fraud association due to network-wide exploitation strategy"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "DiagnosisCode",
+          "Physician"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(C:Claim)-[coded:hasDiagnosis]-(D:DiagnosisCode)",
+          "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify physicians appearing across multiple providers who all show elevated usage of codes 44024/55221",
+          "Detect temporal clustering of when different providers began billing these specific codes",
+          "Analyze geographic proximity or shared business relationships among high-usage providers",
+          "Compare code adoption timelines to identify potential knowledge transfer patterns"
+        ],
+        "data_sources_to_query": [
+          "provider_sql",
+          "claims_sql"
+        ],
+        "plausibility_score": 0.71,
+        "fraud_pattern_type": "fraud network",
+        "alternative_explanation": "Medical education conferences or specialty training programs legitimately disseminated new clinical guidelines that increased appropriate usage of these diagnosis codes among providers who attended the same educational events.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 3,
+        "statement": "Providers exploit diagnosis codes 44024 and 55221 to justify phantom procedures by billing for surgical interventions that were never performed, using these specific codes because they require minimal supporting documentation compared to other high-reimbursement procedures.",
+        "causal_chain": [
+          "Provider identifies diagnosis codes associated with procedures requiring less extensive documentation",
+          "Provider submits claims using these codes without performing actual services",
+          "Codes 44024/55221 become concentrated in fraud cases due to lower documentation barrier",
+          "Average claim amount of $12,830 provides high return on phantom billing with minimal audit risk"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "DiagnosisCode",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(C:Claim)-[coded:hasDiagnosis]-(D:DiagnosisCode)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Cross-reference claims with codes 44024/55221 against beneficiary medical records or facility admission logs",
+          "Identify providers billing these codes with abnormally short procedure times or missing ancillary charges",
+          "Detect beneficiaries with multiple claims for the same diagnosis code within medically implausible timeframes",
+          "Compare post-procedure follow-up visit rates for these codes versus clinical standards"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "beneficiary_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.78,
+        "fraud_pattern_type": "phantom procedures",
+        "alternative_explanation": "These diagnosis codes correspond to outpatient or minimally invasive procedures that genuinely require less documentation and are legitimately billed more frequently by certain provider specialties.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 4,
+        "statement": "Providers systematically pair diagnosis codes 44024 and 55221 with beneficiaries who have recently enrolled in Medicare or switched providers, exploiting the lack of historical claims data to avoid detection of medically unnecessary high-reimbursement procedures.",
+        "causal_chain": [
+          "Provider targets newly enrolled beneficiaries with incomplete claims history in the system",
+          "Provider assigns high-reimbursement diagnosis codes (44024, 55221) to these beneficiaries",
+          "Lack of historical baseline prevents automated detection of medically implausible diagnosis patterns",
+          "Fraudulent claims concentrate around these codes due to selective targeting strategy",
+          "63.9% fraud association emerges from systematic exploitation of data gaps"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "DiagnosisCode",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(C:Claim)-[coded:hasDiagnosis]-(D:DiagnosisCode)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Calculate proportion of claims with codes 44024/55221 where beneficiary has less than 6 months of claims history",
+          "Compare new beneficiary targeting rates between fraud-labeled and non-fraud providers",
+          "Identify providers with abnormally high percentages of these diagnosis codes assigned to recently enrolled beneficiaries",
+          "Analyze time-to-first-high-cost-claim for beneficiaries at different provider types"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "beneficiary_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.68,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "Newly enrolled Medicare beneficiaries genuinely have higher rates of previously undiagnosed conditions that require immediate treatment with procedures coded as 44024/55221, creating a legitimate correlation between new enrollment and these diagnosis codes.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 5,
+        "statement": "Providers exploit diagnosis codes 44024 and 55221 by unbundling what should be single comprehensive procedures into multiple separate claims, each using these high-reimbursement codes to inflate total payments beyond the appropriate bundled rate.",
+        "causal_chain": [
+          "Provider identifies procedures that should be billed as comprehensive bundles",
+          "Provider artificially separates components and bills each with diagnosis codes 44024/55221",
+          "Each unbundled claim averages $12,830, exceeding legitimate bundled reimbursement",
+          "Systematic unbundling creates concentration of these codes in fraudulent claims",
+          "Pattern produces 1.7x fraud association rate for these specific diagnosis codes"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "DiagnosisCode",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(C:Claim)-[coded:hasDiagnosis]-(D:DiagnosisCode)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify beneficiaries with multiple claims using codes 44024/55221 submitted by the same provider within 24-72 hours",
+          "Compare total reimbursement from sequential claims versus standard bundled procedure rates",
+          "Detect providers with abnormally high rates of same-day or consecutive-day claims with these diagnosis codes",
+          "Calculate average number of claims per beneficiary per episode for these codes across provider types"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "beneficiary_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.75,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "These diagnosis codes legitimately correspond to staged procedures or complications requiring multiple separate interventions within short timeframes, and the concentration reflects appropriate medical practice for complex cases rather than fraudulent unbundling.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      }
+    ],
+    "n_hypotheses": 5,
+    "avg_plausibility": 0.748,
+    "generation_time_s": 51.09,
+    "timestamp": "2026-04-20T21:44:25.250140",
+    "status": "SUCCESS"
+  },
+  {
+    "finding_id": "F09",
+    "run_id": 1,
+    "finding_type": "ZeroDurationClaimAnomaly",
+    "entity_type": "Claim",
+    "deviation_ratio": 0.8150000000000001,
+    "ground_truth_label": 1,
+    "gt_verdict": "WEAK",
+    "effect_size": -0.1713,
+    "confidence_score": 0.65,
+    "finding_description": "81.3% of all claims have a duration of 0 days (ClaimStartDt = ClaimEndDt) yet average reimbursement of $241. These zero-duration claims have a fraud rate of 36.6% vs 44.9% for claims with non-zero duration. Are zero-duration claims being used to submit high-value reimbursements for services that required no extended care?",
+    "orchestrator_context": {
+      "selected_paths": [
+        "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+        "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+        "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+      ],
+      "relevant_axioms": [
+        "AX2"
+      ],
+      "relevant_node_types": [
+        "Provider",
+        "Claim",
+        "Beneficiary"
+      ],
+      "investigation_focus": "81.3% of all claims have a duration of 0 days (ClaimStartDt = ClaimEndDt) yet average reimbursement of $241. These zero-duration claims have a fraud rate of 36.6% vs 44.9% for claims with non-zero duration. Are zero-duration claims being used to submit high-value reimbursements for services that required no extended care?",
+      "known_fraud_patterns": [
+        "upcoding",
+        "phantom procedures"
+      ],
+      "reasoning": "Fallback \u2014 JSON parse failed"
+    },
+    "hypotheses": [
+      {
+        "hypothesis_id": 1,
+        "statement": "Providers are systematically submitting zero-duration claims for outpatient procedures that should be coded as inpatient stays, collecting $241 average reimbursement while avoiding the scrutiny and documentation requirements of multi-day admissions, constituting upcoding fraud through service type misclassification.",
+        "causal_chain": [
+          "Provider performs legitimate multi-day inpatient service",
+          "Provider deliberately codes service as single-day outpatient visit to reduce audit risk",
+          "Zero-duration claim submitted with inflated procedure codes appropriate for inpatient care",
+          "System accepts claim due to matching start/end dates appearing routine",
+          "Provider receives $241 reimbursement without inpatient documentation burden"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "InpatientClaim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(IC:InpatientClaim)-[isA:isTypeOf]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Compare procedure codes on zero-duration claims against CMS definitions requiring multi-day stays",
+          "Identify providers with abnormally high ratios of zero-duration to multi-day inpatient claims",
+          "Cross-reference beneficiary medical histories for conditions requiring extended hospitalization",
+          "Analyze reimbursement amounts on zero-duration claims vs typical outpatient procedure averages"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "provider_sql",
+          "beneficiary_sql"
+        ],
+        "plausibility_score": 0.72,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "Many legitimate same-day surgical procedures and diagnostic tests genuinely have zero duration but carry high technical costs, explaining both the prevalence and reimbursement amounts without fraud.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 2,
+        "statement": "Providers are exploiting zero-duration claim coding as a vehicle for phantom procedures, submitting claims for services never rendered to beneficiaries who made brief facility visits for unrelated reasons, with the zero-duration format reducing algorithmic fraud detection sensitivity.",
+        "causal_chain": [
+          "Beneficiary visits facility for legitimate brief service (lab test, consultation)",
+          "Provider records legitimate zero-duration claim for actual service",
+          "Provider submits additional zero-duration claims for phantom procedures on same date",
+          "Fraud detection algorithms deprioritize zero-duration claims as 'normal' given 81.3% prevalence",
+          "Phantom procedures blend into high-volume zero-duration claim stream",
+          "Provider collects cumulative reimbursements averaging $241 per fraudulent claim"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "Beneficiary",
+          "Physician"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+          "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify beneficiaries with multiple zero-duration claims on identical dates from same provider",
+          "Check for medically incompatible procedure combinations on same-day zero-duration claims",
+          "Analyze provider claim velocity patterns for spikes in zero-duration submissions",
+          "Compare beneficiary self-reported visit counts against provider-submitted zero-duration claim counts"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "beneficiary_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.81,
+        "fraud_pattern_type": "phantom procedures",
+        "alternative_explanation": "Providers legitimately bundle multiple quick diagnostic procedures during single patient visits, each coded separately as zero-duration claims per billing requirements, creating appearance of volume without fraud.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 3,
+        "statement": "Providers operating in coordinated fraud networks are using zero-duration claims as a standardized money laundering mechanism, where network members submit uniform zero-duration claims with $241 target reimbursements to distribute fraudulent proceeds while maintaining plausible deniability through format consistency.",
+        "causal_chain": [
+          "Fraud network establishes zero-duration claim template as operational standard",
+          "Multiple providers across network submit claims matching template pattern",
+          "Zero-duration format chosen specifically because 81.3% baseline prevalence provides camouflage",
+          "Network targets $241 reimbursement amount to stay below audit thresholds",
+          "Individual provider submissions appear routine when examined in isolation",
+          "Network-level pattern emerges only through cross-provider graph analysis"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "Physician",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(C:Claim)-[treated:treatedBy]-(PH:Physician)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Detect clusters of providers with statistically similar zero-duration claim distributions",
+          "Identify physicians appearing across multiple providers with matching zero-duration patterns",
+          "Analyze geographic and temporal correlation of zero-duration claim submission spikes",
+          "Map beneficiary overlap across suspected network providers to reveal shared patient pools"
+        ],
+        "data_sources_to_query": [
+          "provider_sql",
+          "claims_sql",
+          "beneficiary_sql"
+        ],
+        "plausibility_score": 0.68,
+        "fraud_pattern_type": "fraud network",
+        "alternative_explanation": "Providers independently adopt zero-duration coding conventions recommended by billing software vendors or professional associations, creating coincidental pattern similarity without coordination.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 4,
+        "statement": "Providers are strategically timing claim submissions to exploit beneficiaries with chronic conditions during brief facility contacts, submitting zero-duration claims for high-reimbursement chronic disease management services that require extended care periods, knowing the zero-duration format obscures the temporal impossibility of service delivery.",
+        "causal_chain": [
+          "Beneficiary with multiple chronic conditions visits facility for unrelated acute issue",
+          "Provider identifies chronic conditions in beneficiary medical record",
+          "Provider submits zero-duration claim for comprehensive chronic disease management service",
+          "Zero-duration format conceals that claimed service requires weeks/months to deliver",
+          "Reimbursement system approves $241 payment based on procedure code match to chronic conditions",
+          "Temporal impossibility hidden by zero-duration claim prevalence normalizing format"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim",
+          "Beneficiary"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+          "(B:Beneficiary)-[has:hasClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Cross-reference procedure codes on zero-duration claims against CMS time-requirement definitions",
+          "Identify beneficiaries with chronic conditions receiving zero-duration claims for long-term management services",
+          "Compare provider zero-duration chronic care claims against beneficiary prescription fill patterns",
+          "Analyze whether beneficiaries have subsequent follow-up visits matching claimed chronic care protocols"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "beneficiary_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.77,
+        "fraud_pattern_type": "upcoding",
+        "alternative_explanation": "Medicare billing rules permit providers to code comprehensive chronic disease assessments as single-day services when performed during routine visits, legitimately generating zero-duration claims with elevated reimbursements.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      },
+      {
+        "hypothesis_id": 5,
+        "statement": "Providers are exploiting the paradoxical lower fraud rate of zero-duration claims (36.6% vs 44.9%) as a reverse-psychology fraud vector, intentionally concentrating fraudulent activities in zero-duration claims precisely because auditors deprioritize the format, while the 36.6% fraud rate still represents 166,000+ fraudulent claims hiding in plain sight.",
+        "causal_chain": [
+          "Provider analyzes historical audit patterns and discovers zero-duration claims receive less scrutiny",
+          "Provider observes 36.6% fraud rate indicates detection algorithms deprioritize zero-duration format",
+          "Provider shifts fraudulent billing strategy toward zero-duration claims to exploit detection gap",
+          "High volume of legitimate zero-duration claims (81.3% prevalence) provides cover",
+          "Fraudulent zero-duration claims achieve $241 average reimbursement with reduced audit risk",
+          "Lower fraud rate percentage masks absolute volume of 166,000+ fraudulent zero-duration claims"
+        ],
+        "ontology_nodes_involved": [
+          "Provider",
+          "Claim"
+        ],
+        "ontology_paths_traversed": [
+          "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+        ],
+        "evidence_needed_to_verify": [
+          "Identify providers whose zero-duration claim fraud rates significantly exceed 36.6% baseline",
+          "Analyze temporal trends showing providers increasing zero-duration claim proportions over time",
+          "Compare provider zero-duration fraud rates before and after audit history events",
+          "Detect providers with zero-duration claims concentrated in procedure codes with weak documentation requirements"
+        ],
+        "data_sources_to_query": [
+          "claims_sql",
+          "provider_sql"
+        ],
+        "plausibility_score": 0.65,
+        "fraud_pattern_type": "strategic fraud optimization",
+        "alternative_explanation": "The lower fraud rate in zero-duration claims reflects genuine billing practices where same-day services have inherently less opportunity for fraud compared to multi-day stays with complex billing scenarios.",
+        "axioms_triggered": [
+          "AX2"
+        ],
+        "status": "PENDING"
+      }
+    ],
+    "n_hypotheses": 5,
+    "avg_plausibility": 0.726,
+    "generation_time_s": 54.82,
+    "timestamp": "2026-04-20T21:45:20.575081",
+    "status": "SUCCESS"
+  }
+]
