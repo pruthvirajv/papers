@@ -1,0 +1,411 @@
+{
+  "ontology_name": "ITSM Incident Management Ontology",
+  "domain": "IT Service Management \u2014 Incident Root Cause Analysis",
+  "version": "1.0",
+  "dataset": "DS3",
+  "source_primary": "https://archive.ics.uci.edu/dataset/498/incident+management+process+enriched+event+log",
+  "source_alternative": "https://www.kaggle.com/datasets/vipulshinde/incident-response-log",
+  "source_files": [
+    "incident_event_log.csv (Primary file \u2014 enriched event log with 141,712 events across 24,918 incidents)",
+    "NOTE: Single-file dataset. Ontology compensates by decomposing the file into 7 derived logical tables via feature engineering (see decomposition_strategy below)."
+  ],
+  "description": "Ontology for automated Root Cause Analysis (RCA) hypothesis generation over the ITSM Incident Management dataset. Although the source is a single CSV, it contains rich embedded multi-entity structure covering Incidents, Activities/Events, Assignments (Team + Engineer), Services/Categories, Time Windows, and Resolution outcomes. The file is decomposed into 7 logical node types via pandas groupby operations. The root_cause_group column provides explicit ground truth for RCA verification \u2014 this is the most direct ground truth of the three datasets. Multi-hop paths traverse: Incident \u2192 Activity \u2192 Team \u2192 Engineer \u2192 ServiceCategory \u2192 Priority \u2192 TimeWindow.",
+  "decomposition_strategy": {
+    "description": "How the single CSV is decomposed into logical relational tables for ontology instantiation",
+    "derived_tables": [
+      {
+        "table": "Incident (node)",
+        "derivation": "GROUP BY number (incident ID) \u2014 one row per unique incident, aggregating all event-level attributes"
+      },
+      {
+        "table": "Activity (node)",
+        "derivation": "Each row in the raw event log is one activity/event within an incident lifecycle (opened, in progress, resolved, closed)"
+      },
+      {
+        "table": "Team (node)",
+        "derivation": "GROUP BY assignment_group \u2014 one row per unique support team, with derived performance metrics"
+      },
+      {
+        "table": "Engineer (node)",
+        "derivation": "GROUP BY assigned_to \u2014 one row per unique engineer, with derived workload and resolution metrics"
+      },
+      {
+        "table": "ServiceCategory (node)",
+        "derivation": "GROUP BY category + subcategory \u2014 one row per unique category-subcategory pair"
+      },
+      {
+        "table": "TimeWindow (node)",
+        "derivation": "Derived from opened_at timestamp \u2014 year, month, quarter, day of week, hour, shift"
+      },
+      {
+        "table": "ResolutionOutcome (node)",
+        "derivation": "GROUP BY root_cause_group + closed_code \u2014 one row per unique resolution pattern"
+      }
+    ]
+  },
+  "nodes": {
+    "Incident": {
+      "datasource": {
+        "tool_name": "query_incident_db",
+        "source_name": "incident_sql",
+        "simulates": "PostgreSQL ITSM database",
+        "key_fields": [
+          "number"
+        ],
+        "join_keys": {
+          "Activity": "number",
+          "ServiceCategory": "category",
+          "ResolutionOutcome": "root_cause_group",
+          "TimeWindow": "opened_at"
+        },
+        "description": "Core incident records \u2014 state, priority, timestamps, RCA labels"
+      },
+      "IncidentID": "Text | Unique incident number (field: number). Primary key. Format: INCxxxxxxx.",
+      "OpenedAt": "DateTime | Timestamp when the incident was first opened/reported.",
+      "ResolvedAt": "DateTime | Timestamp when the incident was resolved. NULL if still open.",
+      "ClosedAt": "DateTime | Timestamp when the incident was closed after resolution confirmation.",
+      "State": "Text | Current state of the incident \u2014 New, In Progress, On Hold, Resolved, Closed, Canceled.",
+      "Priority": "Text | Incident priority \u2014 1-Critical, 2-High, 3-Moderate, 4-Low. Drives SLA response targets.",
+      "Impact": "Text | Business impact level \u2014 1-High, 2-Medium, 3-Low.",
+      "Urgency": "Text | Urgency level \u2014 1-High, 2-Medium, 3-Low.",
+      "Category": "Text | High-level service category affected (e.g., Hardware, Software, Network, Database).",
+      "Subcategory": "Text | Subcategory within the category (e.g., Server Hardware, Operating System, Email).",
+      "SymptomDescription": "Text | Free-text description of the incident symptoms as reported.",
+      "ResolutionNotes": "Text | Free-text description of how the incident was resolved.",
+      "RootCauseGroup": "Text | Explicit root cause classification (ground truth for RCA verification). Examples: Software Bug, Hardware Failure, Configuration Error, User Error, Network Issue, Capacity Problem.",
+      "ClosedCode": "Text | Resolution outcome code \u2014 Solved (Permanently), Solved (Work Around), Not Solved (Not Reproducible), Closed/Resolved by Caller.",
+      "ResolutionTimeHours": "Numeric | Derived \u2014 hours between OpenedAt and ResolvedAt. Primary KPI for incident management efficiency.",
+      "ResponseTimeHours": "Numeric | Derived \u2014 hours between OpenedAt and first assignment (first In Progress state).",
+      "TotalReopenCount": "Numeric | Derived \u2014 count of times the incident moved back from Resolved to In Progress. High reopen counts indicate poor initial diagnosis.",
+      "IsBreachedSLA": "Boolean | Derived \u2014 1 if ResolutionTimeHours exceeds SLA target for this Priority level. SLA targets: P1=4h, P2=8h, P3=72h, P4=168h.",
+      "SLABreachHours": "Numeric | Derived \u2014 hours by which the SLA was exceeded. Negative = resolved within SLA.",
+      "AssignmentGroupChanges": "Numeric | Derived \u2014 count of distinct assignment groups this incident passed through. High counts indicate ping-pong routing failures.",
+      "TotalActivities": "Numeric | Derived \u2014 total number of event log rows for this incident. Proxy for investigation complexity."
+    },
+    "Activity": {
+      "datasource": {
+        "tool_name": "query_incident_db",
+        "source_name": "incident_sql",
+        "simulates": "PostgreSQL ITSM database",
+        "key_fields": [
+          "number",
+          "sys_updated_on"
+        ],
+        "join_keys": {
+          "Incident": "number",
+          "Team": "assignment_group",
+          "Engineer": "assigned_to"
+        },
+        "description": "Event log rows \u2014 one row per state transition per incident"
+      },
+      "ActivityID": "Text | Derived unique identifier for each event log row (IncidentID + sequence number).",
+      "IncidentID": "Text | Foreign key to Incident node.",
+      "State": "Text | State of the incident at this activity event.",
+      "AssignmentGroup": "Text | Team assigned at this activity step (foreign key to Team node).",
+      "AssignedTo": "Text | Engineer assigned at this activity step (foreign key to Engineer node).",
+      "ActivityTimestamp": "DateTime | Timestamp of this activity event (sys_updated_on).",
+      "ActivityDurationHours": "Numeric | Derived \u2014 hours between this activity and the next activity in the same incident. Time spent in this state.",
+      "IsReassignment": "Boolean | Derived \u2014 1 if AssignmentGroup differs from the previous activity's AssignmentGroup.",
+      "IsReopening": "Boolean | Derived \u2014 1 if State transitions from Resolved back to In Progress."
+    },
+    "Team": {
+      "datasource": {
+        "tool_name": "query_team_store",
+        "source_name": "team_nosql",
+        "simulates": "MongoDB document store",
+        "key_fields": [
+          "assignment_group"
+        ],
+        "join_keys": {
+          "Activity": "assignment_group",
+          "Incident": "assignment_group",
+          "ServiceCategory": "category"
+        },
+        "description": "Support team performance \u2014 SLA breach rate, reopen rate, specialisation"
+      },
+      "TeamID": "Text | Unique team identifier (assignment_group value).",
+      "TeamName": "Text | Human-readable name of the support team.",
+      "TotalIncidentsAssigned": "Numeric | Derived \u2014 total number of incidents ever assigned to this team.",
+      "AvgResolutionTimeHours": "Numeric | Derived \u2014 average resolution time for incidents resolved by this team. Primary team performance KPI.",
+      "SLABreachRate": "Numeric | Derived \u2014 proportion of this team's incidents that breached SLA. Range 0-1.",
+      "AvgReopenCount": "Numeric | Derived \u2014 average number of reopens for incidents handled by this team. High values indicate poor diagnosis quality.",
+      "PingPongRate": "Numeric | Derived \u2014 proportion of incidents where this team reassigned to another team after first accepting. Indicates routing mismatches.",
+      "SpecializationScore": "Numeric | Derived \u2014 entropy-based measure of how focused the team is on specific categories. Low entropy = specialized team.",
+      "TeamPerformanceScore": "Numeric | Derived \u2014 composite score: (1 - SLABreachRate) * 0.5 + (1 - AvgReopenCount/MAX_REOPEN) * 0.3 + (1 - PingPongRate) * 0.2. Range 0-1."
+    },
+    "Engineer": {
+      "datasource": {
+        "tool_name": "query_team_store",
+        "source_name": "team_nosql",
+        "simulates": "MongoDB document store",
+        "key_fields": [
+          "assigned_to"
+        ],
+        "join_keys": {
+          "Activity": "assigned_to",
+          "Team": "assignment_group"
+        },
+        "description": "Engineer performance \u2014 resolution time, reopen rate, workload"
+      },
+      "EngineerID": "Text | Unique engineer identifier (assigned_to value).",
+      "TeamID": "Text | Foreign key to Team node \u2014 the team this engineer primarily belongs to.",
+      "TotalIncidentsHandled": "Numeric | Derived \u2014 total incidents this engineer was assigned to.",
+      "AvgResolutionTimeHours": "Numeric | Derived \u2014 average resolution time for incidents resolved by this engineer.",
+      "SLABreachRate": "Numeric | Derived \u2014 proportion of this engineer's incidents that breached SLA.",
+      "AvgReopenCount": "Numeric | Derived \u2014 average reopens for incidents this engineer resolved. High values indicate resolution quality issues.",
+      "UniqueTeamsWorkedWith": "Numeric | Derived \u2014 count of distinct teams this engineer has been assigned under. High values indicate cross-team utility.",
+      "ResolutionAccuracyRate": "Numeric | Derived \u2014 proportion of incidents resolved with ClosedCode = 'Solved (Permanently)' vs workarounds.",
+      "ActiveIncidentLoad": "Numeric | Derived \u2014 number of open incidents currently assigned to this engineer (snapshot metric)."
+    },
+    "ServiceCategory": {
+      "datasource": {
+        "tool_name": "query_analytics_warehouse",
+        "source_name": "itsm_warehouse",
+        "simulates": "Snowflake analytics warehouse",
+        "key_fields": [
+          "category",
+          "subcategory"
+        ],
+        "join_keys": {
+          "Incident": "category",
+          "Team": "category"
+        },
+        "description": "Pre-aggregated category-level SLA and RCA statistics"
+      },
+      "CategoryID": "Text | Derived composite key \u2014 Category + '_' + Subcategory.",
+      "Category": "Text | High-level service category (e.g., Hardware, Software, Network, Database, Email).",
+      "Subcategory": "Text | Subcategory within the category.",
+      "TotalIncidents": "Numeric | Derived \u2014 total incidents in this category-subcategory combination.",
+      "AvgResolutionTimeHours": "Numeric | Derived \u2014 average resolution time for incidents in this category.",
+      "SLABreachRate": "Numeric | Derived \u2014 proportion of incidents in this category that breached SLA.",
+      "MostCommonRootCause": "Text | Derived \u2014 most frequent RootCauseGroup for incidents in this category. Key RCA insight.",
+      "RootCauseDiversity": "Numeric | Derived \u2014 number of distinct root cause groups observed for this category. High diversity = complex diagnostic category.",
+      "AvgPriority": "Numeric | Derived \u2014 average numeric priority of incidents in this category (1=highest). Indicates category criticality.",
+      "RecurrenceRate": "Numeric | Derived \u2014 proportion of incidents in this category that are reopened. High values suggest systemic unresolved issues."
+    },
+    "ResolutionOutcome": {
+      "datasource": {
+        "tool_name": "query_audit_store",
+        "source_name": "rca_audit_store",
+        "simulates": "External RCA audit API",
+        "key_fields": [
+          "root_cause_group",
+          "closed_code"
+        ],
+        "join_keys": {
+          "Incident": "root_cause_group"
+        },
+        "description": "RCA ground truth \u2014 root cause labels and resolution patterns"
+      },
+      "OutcomeID": "Text | Derived composite key \u2014 RootCauseGroup + '_' + ClosedCode.",
+      "RootCauseGroup": "Text | Root cause classification \u2014 the primary ground truth for RCA verification. Values: Software Bug, Hardware Failure, Configuration Error, User Error, Network Issue, Capacity Problem, Third Party Issue, Unknown.",
+      "ClosedCode": "Text | Resolution outcome code \u2014 Solved (Permanently), Solved (Work Around), Not Solved (Not Reproducible), Closed/Resolved by Caller.",
+      "FrequencyCount": "Numeric | Derived \u2014 total incidents with this RootCauseGroup + ClosedCode combination.",
+      "AvgResolutionTimeHours": "Numeric | Derived \u2014 average resolution time for incidents with this outcome pattern.",
+      "MostAffectedCategory": "Text | Derived \u2014 most common ServiceCategory for incidents with this root cause.",
+      "MostAffectedTeam": "Text | Derived \u2014 most common Team for incidents with this root cause.",
+      "IsPermanentResolutionRate": "Numeric | Derived \u2014 proportion resolved permanently vs workaround for this root cause. Low values indicate recurring unresolved causes.",
+      "SLABreachRate": "Numeric | Derived \u2014 proportion of incidents with this root cause that breached SLA."
+    },
+    "TimeWindow": {
+      "datasource": {
+        "tool_name": "query_analytics_warehouse",
+        "source_name": "itsm_warehouse",
+        "simulates": "Snowflake analytics warehouse",
+        "key_fields": [
+          "OpenYear",
+          "OpenMonth",
+          "OpenQuarter",
+          "Shift"
+        ],
+        "default_filters": {
+          "query_type": "time_window"
+        },
+        "join_keys": {
+          "Incident": "opened_at"
+        },
+        "description": "Pre-aggregated time-window incident volume and SLA stats"
+      },
+      "OpenYear": "Numeric | Year when the incident was opened.",
+      "OpenMonth": "Numeric | Month (1-12) when the incident was opened.",
+      "OpenQuarter": "Numeric | Quarter (1-4) when the incident was opened.",
+      "OpenDayOfWeek": "Numeric | Day of week (0=Monday, 6=Sunday) of incident opening.",
+      "OpenHour": "Numeric | Hour (0-23) of incident opening timestamp.",
+      "Shift": "Text | Derived \u2014 Business Hours (8-17 weekdays), After Hours (18-23 weekdays), Weekend, Night (0-7).",
+      "IsMonthEnd": "Boolean | Derived \u2014 1 if day of month is 25-31. Month-end periods often see higher incident volumes due to batch job failures.",
+      "AvgIncidentsPerDay": "Numeric | Derived \u2014 average daily incident count in this time period.",
+      "AvgResolutionTimeHours": "Numeric | Derived \u2014 average resolution time for incidents opened in this period.",
+      "SLABreachRateInPeriod": "Numeric | Derived \u2014 proportion of incidents opened in this period that breached SLA.",
+      "MostCommonRootCauseInPeriod": "Text | Derived \u2014 most frequent root cause group for incidents opened in this period."
+    }
+  },
+  "relationtrees": {
+    "description": "Directed paths through the 7 derived logical node types. Multi-hop traversals enable RCA hypothesis generation about why incidents take long to resolve, which teams struggle, and what root causes recur.",
+    "paths": [
+      {
+        "path": "(I:Incident)-[hasActivity:hasActivity]-(A:Activity)",
+        "hop_tools": [
+          "query_incident_db",
+          "query_incident_db"
+        ],
+        "join_on": "number"
+      },
+      {
+        "path": "(A:Activity)-[assignedToTeam:assignedToTeam]-(T:Team)",
+        "hop_tools": [
+          "query_incident_db",
+          "query_team_store"
+        ],
+        "join_on": "assignment_group"
+      },
+      {
+        "path": "(A:Activity)-[assignedToEngineer:assignedToEngineer]-(E:Engineer)",
+        "hop_tools": [
+          "query_incident_db",
+          "query_team_store"
+        ],
+        "join_on": "assigned_to"
+      },
+      {
+        "path": "(E:Engineer)-[belongsToTeam:belongsToTeam]-(T:Team)",
+        "hop_tools": [
+          "query_team_store",
+          "query_team_store"
+        ],
+        "join_on": "assignment_group"
+      },
+      {
+        "path": "(I:Incident)-[categorizedAs:categorizedAs]-(SC:ServiceCategory)",
+        "hop_tools": [
+          "query_incident_db",
+          "query_analytics_warehouse"
+        ],
+        "join_on": "category"
+      },
+      {
+        "path": "(I:Incident)-[resolvedWith:resolvedWith]-(RO:ResolutionOutcome)",
+        "hop_tools": [
+          "query_incident_db",
+          "query_audit_store"
+        ],
+        "join_on": "root_cause_group"
+      },
+      {
+        "path": "(I:Incident)-[openedDuring:openedDuring]-(TW:TimeWindow)",
+        "hop_tools": [
+          "query_incident_db",
+          "query_analytics_warehouse"
+        ],
+        "join_on": "opened_at"
+      },
+      {
+        "path": "(T:Team)-[handlesCategory:handlesCategory]-(SC:ServiceCategory)",
+        "hop_tools": [
+          "query_team_store",
+          "query_analytics_warehouse"
+        ],
+        "join_on": "category"
+      },
+      {
+        "path": "(RO:ResolutionOutcome)-[associatedWithCategory:associatedWithCategory]-(SC:ServiceCategory)",
+        "hop_tools": [
+          "query_audit_store",
+          "query_analytics_warehouse"
+        ],
+        "join_on": "category"
+      },
+      {
+        "path": "(RO:ResolutionOutcome)-[resolvedByTeam:resolvedByTeam]-(T:Team)",
+        "hop_tools": [
+          "query_audit_store",
+          "query_team_store"
+        ],
+        "join_on": "assignment_group"
+      },
+      {
+        "path": "(I:Incident)-[escalatedFrom:escalatedFrom]-(T:Team)",
+        "hop_tools": [
+          "query_incident_db",
+          "query_team_store"
+        ],
+        "join_on": "assignment_group"
+      },
+      {
+        "path": "(I:Incident)-[reopenedBy:reopenedBy]-(E:Engineer)",
+        "hop_tools": [
+          "query_incident_db",
+          "query_team_store"
+        ],
+        "join_on": "assigned_to"
+      }
+    ],
+    "multi_hop_example_paths": [
+      "Incident \u2192 Activity \u2192 Team \u2192 ServiceCategory (4 hops): Are certain teams being assigned incidents outside their service category specialization \u2014 causing longer resolution times?",
+      "Incident \u2192 ResolutionOutcome \u2192 Team \u2192 TimeWindow (4 hops): Do certain root causes (e.g., Configuration Error) cluster in specific time windows (e.g., month-end batch runs)?",
+      "Incident \u2192 Activity \u2192 Engineer \u2192 Team \u2192 SLABreachRate (5 hops): Are specific engineers with high reopen counts concentrated in teams with high SLA breach rates \u2014 suggesting team-level training gaps?",
+      "ServiceCategory \u2192 Incident \u2192 TimeWindow \u2192 RootCauseGroup (4 hops): Does the 'Network' category show different root cause distributions during after-hours vs business-hours windows?",
+      "Incident \u2192 AssignmentGroupChanges \u2192 Team \u2192 SpecializationScore (4 hops): Do incidents with 3+ assignment group changes predominantly involve generalist teams (high category diversity) rather than specialized ones?"
+    ]
+  },
+  "axioms": [
+    {
+      "axiom_id": "AX1",
+      "name": "SLA breach detection",
+      "rule": "IF (Priority='1-Critical' AND ResolutionTimeHours > 4) OR (Priority='2-High' AND ResolutionTimeHours > 8) OR (Priority='3-Moderate' AND ResolutionTimeHours > 72) OR (Priority='4-Low' AND ResolutionTimeHours > 168) THEN Incident.IsBreachedSLA = TRUE",
+      "confidence": 1.0,
+      "verification_type": "Deterministic"
+    },
+    {
+      "axiom_id": "AX2",
+      "name": "Ping-pong routing failure",
+      "rule": "IF Incident.AssignmentGroupChanges >= 3 THEN Incident.IsRoutingFailure = TRUE AND Incident.RootCauseHypothesis INCLUDES 'Incorrect initial routing'",
+      "confidence": 0.82,
+      "verification_type": "Statistical"
+    },
+    {
+      "axiom_id": "AX3",
+      "name": "Chronic reopen pattern",
+      "rule": "IF Incident.TotalReopenCount >= 2 THEN RootCauseGroup LIKELY IN ['Software Bug', 'Capacity Problem', 'Configuration Error']",
+      "confidence": 0.78,
+      "verification_type": "Statistical"
+    },
+    {
+      "axiom_id": "AX4",
+      "name": "After-hours resolution penalty",
+      "rule": "IF TimeWindow.Shift IN ['After Hours', 'Night', 'Weekend'] THEN AVG(ResolutionTimeHours) > 1.5 * AVG(ResolutionTimeHours | Shift='Business Hours')",
+      "confidence": 0.85,
+      "verification_type": "Statistical"
+    },
+    {
+      "axiom_id": "AX5",
+      "name": "Team-category mismatch",
+      "rule": "IF Team.SpecializationScore < 0.3 AND Incident.Category NOT IN Team.TopCategories THEN P(IsBreachedSLA) > 0.6",
+      "confidence": 0.76,
+      "verification_type": "Multi-hop"
+    },
+    {
+      "axiom_id": "AX6",
+      "name": "Month-end batch failure cluster",
+      "rule": "IF TimeWindow.IsMonthEnd = TRUE AND ServiceCategory.Category IN ['Database', 'Software'] THEN IncidentVolume > 1.3 * MonthlyAvgVolume",
+      "confidence": 0.72,
+      "verification_type": "Statistical"
+    }
+  ],
+  "ground_truth_strategy": {
+    "primary": "RootCauseGroup column \u2014 explicit root cause classification, the most direct RCA ground truth of all three datasets",
+    "secondary_sla": "IsBreachedSLA (derived from Priority + ResolutionTimeHours) \u2014 deterministic SLA compliance label",
+    "secondary_statistical": "IQR outlier detection on ResolutionTimeHours per Category + Priority \u2014 flags abnormally slow resolutions",
+    "secondary_temporal": "Rolling weekly z-score on AvgIncidentsPerDay per TimeWindow \u2014 flags volume spikes",
+    "secondary_multihop": "AssignmentGroupChanges >= 3 \u2014 deterministic routing failure flag for ping-pong hypothesis verification",
+    "evaluation_corpus_size": 250,
+    "expert_validation_sample": "10% (25 findings), 3 judges, majority vote",
+    "note": "RootCauseGroup enables exact automated verification unlike DS1 (statistical) or DS2 (statistical) \u2014 AX1 verification is 100% deterministic"
+  },
+  "hypothesis_examples": [
+    "Incidents in the 'Network' category that occur on weekends and holidays take 2.3\u00d7 longer to resolve than weekday incidents \u2014 root cause is reduced after-hours staffing for network specialists, not incident complexity.",
+    "The 'Configuration Error' root cause group accounts for 34% of all SLA breaches in the 'Software' category \u2014 these incidents are being misrouted to Tier 1 teams that lack configuration management access.",
+    "Incidents with 3 or more assignment group changes have a SLA breach rate 4\u00d7 higher than single-assignment incidents \u2014 the root cause is inaccurate initial incident categorization at the point of logging.",
+    "Engineers with active incident loads above 15 simultaneously show reopen rates 60% higher than engineers with loads below 5 \u2014 indicating capacity-driven resolution quality degradation.",
+    "Month-end periods (days 25-31) show a 40% spike in 'Database' category incidents with root cause 'Capacity Problem' \u2014 driven by end-of-month batch reporting jobs overwhelming database resources."
+  ]
+}
