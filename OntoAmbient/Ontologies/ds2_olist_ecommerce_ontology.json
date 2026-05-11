@@ -1,0 +1,421 @@
+{
+  "ontology_name": "Olist Brazilian E-Commerce Ontology",
+  "domain": "E-Commerce Operations \u2014 Order Fulfillment, Seller Performance, Customer Satisfaction",
+  "version": "1.0",
+  "dataset": "DS2",
+  "source": "https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce",
+  "source_files": [
+    "olist_orders_dataset.csv (Order lifecycle \u2014 status, timestamps)",
+    "olist_order_items_dataset.csv (Items per order \u2014 seller, product, price, freight)",
+    "olist_order_payments_dataset.csv (Payment type, installments, value)",
+    "olist_order_reviews_dataset.csv (Review score, title, comment, timestamps)",
+    "olist_customers_dataset.csv (Customer location \u2014 city, state, zip)",
+    "olist_sellers_dataset.csv (Seller location \u2014 city, state, zip)",
+    "olist_products_dataset.csv (Product category, dimensions, weight)",
+    "olist_product_category_name_translation.csv (Portuguese to English category names)",
+    "olist_geolocation_dataset.csv (Zip code to lat/lng mapping)"
+  ],
+  "description": "Ontology for automated hypothesis generation over the Olist Brazilian E-Commerce dataset. Covers 9 interconnected tables enabling multi-hop traversal across Order, Customer, Seller, Product, Payment, Review, and Geographic dimensions. Primary analytical questions concern delivery delays, customer dissatisfaction, seller underperformance, and payment anomalies. No explicit fraud label \u2014 ground truth is derived via statistical methods (late delivery outliers, low review score patterns, payment installment anomalies).",
+  "nodes": {
+    "Order": {
+      "datasource": {
+        "tool_name": "query_orders_db",
+        "source_name": "orders_sql",
+        "simulates": "PostgreSQL orders database",
+        "key_fields": [
+          "order_id"
+        ],
+        "join_keys": {
+          "Customer": "customer_id",
+          "OrderItem": "order_id",
+          "Payment": "order_id",
+          "Review": "order_id"
+        },
+        "description": "Order lifecycle \u2014 status, timestamps, delivery performance"
+      },
+      "OrderID": "Text | Unique identifier for each order (order_id). Primary key linking all order-related tables.",
+      "CustomerID": "Text | Foreign key to Customer node (customer_id). Links the order to the purchasing customer.",
+      "OrderStatus": "Text | Current status of the order \u2014 delivered, shipped, canceled, unavailable, invoiced, processing, created, approved. 'delivered' is the terminal success state.",
+      "OrderPurchaseTimestamp": "DateTime | Timestamp when the customer placed the order.",
+      "OrderApprovedAt": "DateTime | Timestamp when the payment was approved by the platform.",
+      "OrderDeliveredCarrierDate": "DateTime | Timestamp when the order was handed to the logistics carrier.",
+      "OrderDeliveredCustomerDate": "DateTime | Timestamp when the order was actually delivered to the customer.",
+      "OrderEstimatedDeliveryDate": "Date | Estimated delivery date shown to the customer at purchase time.",
+      "IsLate": "Boolean | Derived \u2014 1 if OrderDeliveredCustomerDate > OrderEstimatedDeliveryDate, 0 otherwise. Primary delivery performance signal.",
+      "DaysLate": "Numeric | Derived \u2014 number of days by which delivery exceeded estimate. Negative values = early delivery.",
+      "ApprovalDelayHours": "Numeric | Derived \u2014 hours between OrderPurchaseTimestamp and OrderApprovedAt. Long approval delays indicate payment processing issues.",
+      "CarrierPickupDelayDays": "Numeric | Derived \u2014 days between OrderApprovedAt and OrderDeliveredCarrierDate. Long gaps indicate seller preparation delays.",
+      "TransitDays": "Numeric | Derived \u2014 days between OrderDeliveredCarrierDate and OrderDeliveredCustomerDate. Reflects carrier performance.",
+      "TotalOrderValue": "Numeric | Derived \u2014 sum of all item prices + freight values for this order in BRL.",
+      "IsCanceled": "Boolean | Derived \u2014 1 if OrderStatus = 'canceled', 0 otherwise."
+    },
+    "Customer": {
+      "datasource": {
+        "tool_name": "query_customer_db",
+        "source_name": "customer_sql",
+        "simulates": "MySQL customer database",
+        "key_fields": [
+          "customer_id",
+          "customer_unique_id"
+        ],
+        "join_keys": {
+          "Order": "customer_id"
+        },
+        "description": "Customer location and order history"
+      },
+      "CustomerID": "Text | Unique identifier per order (customer_id) \u2014 note: one physical customer can have multiple CustomerIDs across orders.",
+      "CustomerUniqueID": "Text | Persistent unique identifier for the actual physical customer across all their orders.",
+      "CustomerCity": "Text | City of the customer's delivery address.",
+      "CustomerState": "Text | Brazilian state code (e.g., SP, RJ, MG) of the customer's delivery address.",
+      "CustomerZipCodePrefix": "Text | 5-digit zip code prefix of the customer's delivery address.",
+      "Latitude": "Numeric | Derived \u2014 latitude of customer's zip code from geolocation table.",
+      "Longitude": "Numeric | Derived \u2014 longitude of customer's zip code from geolocation table.",
+      "TotalOrders": "Numeric | Derived \u2014 total number of orders placed by this CustomerUniqueID.",
+      "AvgReviewScore": "Numeric | Derived \u2014 average review score given by this customer across all their orders. Range 1-5.",
+      "LateDeliveryRate": "Numeric | Derived \u2014 proportion of this customer's orders that were delivered late."
+    },
+    "Seller": {
+      "datasource": {
+        "tool_name": "query_seller_db",
+        "source_name": "seller_sql",
+        "simulates": "MySQL seller database",
+        "key_fields": [
+          "seller_id"
+        ],
+        "join_keys": {
+          "OrderItem": "seller_id"
+        },
+        "description": "Seller location and performance features"
+      },
+      "SellerID": "Text | Unique identifier for each seller on the Olist marketplace.",
+      "SellerCity": "Text | City where the seller operates.",
+      "SellerState": "Text | Brazilian state code where the seller operates.",
+      "SellerZipCodePrefix": "Text | 5-digit zip code prefix of the seller's location.",
+      "Latitude": "Numeric | Derived \u2014 latitude of seller's zip code from geolocation table.",
+      "Longitude": "Numeric | Derived \u2014 longitude of seller's zip code from geolocation table.",
+      "TotalOrdersFulfilled": "Numeric | Derived \u2014 total number of order items fulfilled by this seller.",
+      "AvgReviewScore": "Numeric | Derived \u2014 average review score received by this seller across all orders. Range 1-5.",
+      "LateDeliveryRate": "Numeric | Derived \u2014 proportion of this seller's orders that were delivered late. Key seller performance KPI.",
+      "AvgCarrierPickupDelayDays": "Numeric | Derived \u2014 average days between order approval and carrier pickup for this seller. High values indicate slow seller preparation.",
+      "CancellationRate": "Numeric | Derived \u2014 proportion of this seller's orders that were canceled.",
+      "AvgFreightValue": "Numeric | Derived \u2014 average freight cost charged by this seller in BRL.",
+      "AvgItemPrice": "Numeric | Derived \u2014 average item price for this seller's products in BRL.",
+      "SellerPerformanceScore": "Numeric | Derived \u2014 composite score combining review score (normalized), late delivery rate (inverted), and cancellation rate (inverted). Range 0-1."
+    },
+    "OrderItem": {
+      "datasource": {
+        "tool_name": "query_orders_db",
+        "source_name": "orders_sql",
+        "simulates": "PostgreSQL orders database",
+        "key_fields": [
+          "order_id",
+          "order_item_id"
+        ],
+        "join_keys": {
+          "Order": "order_id",
+          "Product": "product_id",
+          "Seller": "seller_id"
+        },
+        "description": "Line items within each order \u2014 price, freight, seller"
+      },
+      "OrderItemID": "Numeric | Sequential item number within a multi-item order.",
+      "OrderID": "Text | Foreign key to Order node.",
+      "ProductID": "Text | Foreign key to Product node.",
+      "SellerID": "Text | Foreign key to Seller node.",
+      "ShippingLimitDate": "Date | Deadline by which the seller must ship this item to the carrier.",
+      "Price": "Numeric | Item price in BRL as listed by the seller.",
+      "FreightValue": "Numeric | Freight (shipping) cost for this item in BRL.",
+      "IsShippingLate": "Boolean | Derived \u2014 1 if OrderDeliveredCarrierDate > ShippingLimitDate, 0 otherwise. Seller-level shipping delay indicator.",
+      "PriceFreightRatio": "Numeric | Derived \u2014 Price / FreightValue. Very low ratios (cheap items with high freight) may indicate price manipulation or geographic remote delivery."
+    },
+    "Product": {
+      "datasource": {
+        "tool_name": "query_product_store",
+        "source_name": "product_nosql",
+        "simulates": "MongoDB product catalogue",
+        "key_fields": [
+          "product_id"
+        ],
+        "join_keys": {
+          "OrderItem": "product_id"
+        },
+        "description": "Product catalogue \u2014 category, dimensions, weight"
+      },
+      "ProductID": "Text | Unique identifier for each product listed on Olist.",
+      "ProductCategoryName": "Text | Category name in Portuguese.",
+      "ProductCategoryNameEnglish": "Text | Translated category name in English (from translation table).",
+      "ProductNameLength": "Numeric | Character count of the product name description.",
+      "ProductDescriptionLength": "Numeric | Character count of the product description.",
+      "ProductPhotosQty": "Numeric | Number of product photos provided by the seller. Low photo counts are associated with higher return/dissatisfaction rates.",
+      "ProductWeightG": "Numeric | Product weight in grams. Drives freight cost calculation.",
+      "ProductLengthCm": "Numeric | Product length in centimeters.",
+      "ProductHeightCm": "Numeric | Product height in centimeters.",
+      "ProductWidthCm": "Numeric | Product width in centimeters.",
+      "ProductVolumeCm3": "Numeric | Derived \u2014 Length \u00d7 Height \u00d7 Width. Volumetric size proxy for freight cost.",
+      "AvgReviewScore": "Numeric | Derived \u2014 average review score for this product across all orders. Range 1-5.",
+      "TotalUnitsSold": "Numeric | Derived \u2014 total number of units of this product sold.",
+      "LateDeliveryRate": "Numeric | Derived \u2014 proportion of orders containing this product that were delivered late."
+    },
+    "Payment": {
+      "datasource": {
+        "tool_name": "query_payments_db",
+        "source_name": "payments_sql",
+        "simulates": "PostgreSQL payments database",
+        "key_fields": [
+          "order_id",
+          "payment_sequential"
+        ],
+        "join_keys": {
+          "Order": "order_id"
+        },
+        "description": "Payment type, installments, value per order"
+      },
+      "OrderID": "Text | Foreign key to Order node.",
+      "PaymentSequential": "Numeric | Sequence number for multi-payment orders (e.g., combining voucher + credit card).",
+      "PaymentType": "Text | Payment method \u2014 credit_card, boleto, voucher, debit_card.",
+      "PaymentInstallments": "Numeric | Number of installments chosen by the customer. Range 1-24. High installment counts on high-value orders are normal in Brazil.",
+      "PaymentValue": "Numeric | Value of this specific payment in BRL.",
+      "TotalPaymentValue": "Numeric | Derived \u2014 sum of all payment sequences for this order. Should match TotalOrderValue.",
+      "PaymentValueDiscrepancy": "Numeric | Derived \u2014 abs(TotalPaymentValue - TotalOrderValue). Non-zero values indicate payment anomalies.",
+      "IsVoucherUsed": "Boolean | Derived \u2014 1 if any payment sequence uses voucher type.",
+      "HighInstallmentFlag": "Boolean | Derived \u2014 1 if PaymentInstallments > 10 AND PaymentValue > 500 BRL. Indicates potential financial stress or installment abuse."
+    },
+    "Review": {
+      "datasource": {
+        "tool_name": "query_review_store",
+        "source_name": "review_nosql",
+        "simulates": "MongoDB review document store",
+        "key_fields": [
+          "review_id",
+          "order_id"
+        ],
+        "join_keys": {
+          "Order": "order_id"
+        },
+        "description": "Customer review scores and comments"
+      },
+      "ReviewID": "Text | Unique identifier for each review submission.",
+      "OrderID": "Text | Foreign key to Order node.",
+      "ReviewScore": "Numeric | Customer satisfaction score. Range 1-5; 1=very dissatisfied, 5=very satisfied. Primary customer experience signal.",
+      "ReviewCreationDate": "DateTime | Timestamp when the review request was sent to the customer.",
+      "ReviewAnswerTimestamp": "DateTime | Timestamp when the customer submitted the review.",
+      "ReviewResponseDays": "Numeric | Derived \u2014 days between ReviewCreationDate and ReviewAnswerTimestamp. Long response times indicate disengaged customers.",
+      "HasComment": "Boolean | Derived \u2014 1 if review_comment_message is not null, 0 otherwise.",
+      "IsNegativeReview": "Boolean | Derived \u2014 1 if ReviewScore <= 2, 0 otherwise. Used as a dissatisfaction ground truth proxy.",
+      "IsHighSatisfaction": "Boolean | Derived \u2014 1 if ReviewScore = 5, 0 otherwise.",
+      "SentimentCategory": "Text | Derived from ReviewScore \u2014 Negative (1-2), Neutral (3), Positive (4-5)."
+    },
+    "GeographicLocation": {
+      "datasource": {
+        "tool_name": "query_geo_warehouse",
+        "source_name": "geo_warehouse",
+        "simulates": "Snowflake analytics warehouse",
+        "key_fields": [
+          "zip_code_prefix"
+        ],
+        "join_keys": {
+          "Customer": "customer_zip_code_prefix",
+          "Seller": "seller_zip_code_prefix"
+        },
+        "description": "Zip code to lat/lng and distance calculations"
+      },
+      "ZipCodePrefix": "Text | 5-digit Brazilian zip code prefix (CEP prefix).",
+      "Latitude": "Numeric | Latitude coordinate for this zip code prefix.",
+      "Longitude": "Numeric | Longitude coordinate for this zip code prefix.",
+      "City": "Text | City name associated with this zip code.",
+      "State": "Text | Brazilian state code.",
+      "SellerCustomerDistanceKm": "Numeric | Derived \u2014 geodesic distance between seller and customer zip code centroids. Long distances correlate with late deliveries and high freight costs.",
+      "RegionName": "Text | Derived \u2014 macro-region of Brazil: Norte, Nordeste, Centro-Oeste, Sudeste, Sul."
+    },
+    "TimeWindow": {
+      "datasource": {
+        "tool_name": "query_geo_warehouse",
+        "source_name": "geo_warehouse",
+        "simulates": "Snowflake analytics warehouse",
+        "key_fields": [
+          "PurchaseYear",
+          "PurchaseMonth",
+          "PurchaseQuarter"
+        ],
+        "default_filters": {
+          "query_type": "time_window"
+        },
+        "join_keys": {
+          "Order": "order_purchase_timestamp"
+        },
+        "description": "Pre-aggregated time-period delivery and review stats"
+      },
+      "PurchaseYear": "Numeric | Year of order purchase.",
+      "PurchaseMonth": "Numeric | Month (1-12) of order purchase.",
+      "PurchaseQuarter": "Numeric | Quarter (1-4) of order purchase.",
+      "PurchaseDayOfWeek": "Numeric | Day of week (0=Monday, 6=Sunday) of order purchase.",
+      "PurchaseHour": "Numeric | Hour (0-23) of order purchase timestamp.",
+      "IsWeekend": "Boolean | Derived \u2014 1 if PurchaseDayOfWeek >= 5.",
+      "IsHolidaySeason": "Boolean | Derived \u2014 1 if month is November or December (Black Friday + Christmas peak). Associated with higher volumes and potential delivery degradation.",
+      "AvgOrdersPerDay": "Numeric | Derived \u2014 average daily order volume in this time period.",
+      "AvgLateDeliveryRateInPeriod": "Numeric | Derived \u2014 proportion of orders in this period that were delivered late.",
+      "AvgReviewScoreInPeriod": "Numeric | Derived \u2014 average review score for orders purchased in this period."
+    }
+  },
+  "relationtrees": {
+    "description": "Directed paths through the 9-table Olist schema. Multi-hop traversals enable hypothesis generation about root causes of delivery failures, seller underperformance, and customer dissatisfaction.",
+    "paths": [
+      {
+        "path": "(O:Order)-[placedBy:placedByCustomer]-(C:Customer)",
+        "hop_tools": [
+          "query_orders_db",
+          "query_customer_db"
+        ],
+        "join_on": "customer_id"
+      },
+      {
+        "path": "(O:Order)-[contains:containsItem]-(OI:OrderItem)",
+        "hop_tools": [
+          "query_orders_db",
+          "query_orders_db"
+        ],
+        "join_on": "order_id"
+      },
+      {
+        "path": "(OI:OrderItem)-[fulfilledBy:fulfilledBySeller]-(S:Seller)",
+        "hop_tools": [
+          "query_orders_db",
+          "query_seller_db"
+        ],
+        "join_on": "seller_id"
+      },
+      {
+        "path": "(OI:OrderItem)-[involves:involvesProduct]-(P:Product)",
+        "hop_tools": [
+          "query_orders_db",
+          "query_product_store"
+        ],
+        "join_on": "product_id"
+      },
+      {
+        "path": "(O:Order)-[paidWith:paidWithPayment]-(PAY:Payment)",
+        "hop_tools": [
+          "query_orders_db",
+          "query_payments_db"
+        ],
+        "join_on": "order_id"
+      },
+      {
+        "path": "(O:Order)-[reviewedAs:hasReview]-(R:Review)",
+        "hop_tools": [
+          "query_orders_db",
+          "query_review_store"
+        ],
+        "join_on": "order_id"
+      },
+      {
+        "path": "(O:Order)-[during:occurredDuring]-(TW:TimeWindow)",
+        "hop_tools": [
+          "query_orders_db",
+          "query_geo_warehouse"
+        ],
+        "join_on": "order_purchase_timestamp"
+      },
+      {
+        "path": "(C:Customer)-[locatedIn:locatedInGeo]-(GL:GeographicLocation)",
+        "hop_tools": [
+          "query_customer_db",
+          "query_geo_warehouse"
+        ],
+        "join_on": "customer_zip_code_prefix"
+      },
+      {
+        "path": "(S:Seller)-[operatesIn:operatesInGeo]-(GL:GeographicLocation)",
+        "hop_tools": [
+          "query_seller_db",
+          "query_geo_warehouse"
+        ],
+        "join_on": "seller_zip_code_prefix"
+      },
+      {
+        "path": "(P:Product)-[belongsTo:belongsToCategory]-(P:Product)",
+        "hop_tools": [
+          "query_product_store",
+          "query_product_store"
+        ],
+        "join_on": "product_category_name"
+      },
+      {
+        "path": "(S:Seller)-[soldProduct:soldProduct]-(P:Product)",
+        "hop_tools": [
+          "query_seller_db",
+          "query_product_store"
+        ],
+        "join_on": "seller_id"
+      },
+      {
+        "path": "(GL:GeographicLocation)-[distanceTo:distanceTo]-(GL:GeographicLocation)",
+        "hop_tools": [
+          "query_geo_warehouse",
+          "query_geo_warehouse"
+        ],
+        "join_on": "zip_code_prefix"
+      }
+    ],
+    "multi_hop_example_paths": [
+      "Order \u2192 Review \u2192 Seller \u2192 GeographicLocation (4 hops): Are low-review-score orders concentrated among sellers in specific Brazilian states \u2014 indicating regional logistics failures?",
+      "Order \u2192 OrderItem \u2192 Product \u2192 Category \u2192 Seller (5 hops): Are sellers in certain product categories consistently late \u2014 indicating category-specific fulfillment challenges?",
+      "Customer \u2192 Order \u2192 Payment \u2192 Installments \u2192 TimeWindow (5 hops): Do customers using high installment counts show higher cancellation rates during holiday seasons?",
+      "Seller \u2192 OrderItem \u2192 Order \u2192 Review \u2192 Customer (5 hops): Are specific sellers' late deliveries causing disproportionate review score drops \u2014 linking seller delay to customer churn risk?",
+      "GeographicLocation(Seller) \u2192 GeographicLocation(Customer) \u2192 Distance \u2192 TransitDays \u2192 LateDelivery (5 hops): Does geodesic seller-to-customer distance predict late delivery independently of seller performance?"
+    ]
+  },
+  "axioms": [
+    {
+      "axiom_id": "AX1",
+      "name": "Late delivery detection",
+      "rule": "IF Order.OrderDeliveredCustomerDate > Order.OrderEstimatedDeliveryDate THEN Order.IsLate = TRUE AND Order.DaysLate = (OrderDeliveredCustomerDate - OrderEstimatedDeliveryDate).days",
+      "confidence": 1.0,
+      "verification_type": "Deterministic"
+    },
+    {
+      "axiom_id": "AX2",
+      "name": "Seller shipping delay flag",
+      "rule": "IF Seller.AvgCarrierPickupDelayDays > Q3(AvgCarrierPickupDelayDays) + 1.5 * IQR(AvgCarrierPickupDelayDays) THEN Seller.IsShippingSlowOutlier = TRUE",
+      "confidence": 0.85,
+      "verification_type": "Statistical"
+    },
+    {
+      "axiom_id": "AX3",
+      "name": "Review score delivery correlation",
+      "rule": "IF Order.IsLate = TRUE AND Order.DaysLate > 7 THEN P(Review.ReviewScore <= 2) > 0.6",
+      "confidence": 0.8,
+      "verification_type": "Statistical"
+    },
+    {
+      "axiom_id": "AX4",
+      "name": "Distance-driven late delivery",
+      "rule": "IF GeographicLocation.SellerCustomerDistanceKm > 1500 AND Seller.AvgCarrierPickupDelayDays < MEDIAN THEN Order.LateDeliveryRootCause = 'TransitDistance'",
+      "confidence": 0.75,
+      "verification_type": "Multi-hop"
+    },
+    {
+      "axiom_id": "AX5",
+      "name": "Payment value discrepancy",
+      "rule": "IF Payment.PaymentValueDiscrepancy > 0.01 THEN Order.HasPaymentAnomaly = TRUE",
+      "confidence": 1.0,
+      "verification_type": "Deterministic"
+    }
+  ],
+  "ground_truth_strategy": {
+    "primary": "Order.IsLate (derived from timestamp comparison) \u2014 deterministic delivery performance label",
+    "secondary_review": "Review.IsNegativeReview (ReviewScore <= 2) \u2014 customer dissatisfaction proxy",
+    "secondary_statistical": "IQR outlier detection on Seller.LateDeliveryRate and DaysLate \u2014 identifies underperforming sellers",
+    "secondary_temporal": "Rolling monthly z-score on AvgLateDeliveryRateInPeriod \u2014 flags seasonal degradation",
+    "secondary_geographic": "Geodesic distance analysis \u2014 flags distance-driven delays vs seller-driven delays",
+    "evaluation_corpus_size": 350,
+    "expert_validation_sample": "10% (35 findings), 3 judges, majority vote"
+  },
+  "hypothesis_examples": [
+    "Sellers in the Norte and Nordeste regions of Brazil show disproportionately high late delivery rates because geodesic distance to S\u00e3o Paulo customers exceeds 2,000 km \u2014 the root cause is transit time, not seller preparation.",
+    "Orders placed during November and December show a 15-25% increase in late delivery rate because carrier capacity is overwhelmed during peak holiday season \u2014 the delay accumulates at the transit stage, not the seller stage.",
+    "Low-review-score orders (score 1-2) for the 'cama_mesa_banho' (bedding) category are disproportionately caused by product dimension mismatches with freight cost \u2014 customers report receiving damaged items due to inadequate packaging.",
+    "Sellers who take more than 5 days on average to hand orders to carriers have a late delivery rate 3\u00d7 higher than the platform median, regardless of delivery distance.",
+    "Customers using 12+ payment installments on orders above 500 BRL show a cancellation rate 40% higher than single-installment customers \u2014 indicating financial stress-driven abandonment."
+  ]
+}
