@@ -1,0 +1,343 @@
+[
+  {
+    "FindingID": "F01",
+    "FindingType": "GeographicFraudConcentration",
+    "AggregationLevel": "State",
+    "EntityType": "GeographicLocation",
+    "FindingDescription": "State 49 shows a provider fraud rate of 19.6% \u2014 2.1x the national average of 9.4%. Average provider reimbursement in this state is 1.2x the national median. 107 providers analysed. What is driving this geographic concentration of fraud?",
+    "ObservedValue": 0.1963,
+    "BaselineValue": 0.0935,
+    "DeviationRatio": 2.098,
+    "AffectedEntities": [
+      "State_49"
+    ],
+    "AffectedCount": 107,
+    "AnalyticalMetric": "FraudProviderRate",
+    "ComparisonBaseline": "National average fraud provider rate",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.699,
+    "DataSources": [
+      "provider_sql",
+      "analytics_warehouse",
+      "claims_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "GeographicLocation",
+      "Provider",
+      "Claim"
+    ],
+    "RelationPaths": [
+      "(P:Provider)-[operates:operatesIn]-(GL:GeographicLocation)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+    ]
+  },
+  {
+    "FindingID": "F02",
+    "FindingType": "SeasonalFraudSpike",
+    "AggregationLevel": "Quarter",
+    "EntityType": "TimeWindow",
+    "FindingDescription": "Q2 shows a claim-level fraud rate of 38.2% \u2014 1.0x higher than Q4 (38.0%). Average reimbursement in the peak quarter is $993 vs $1,015 in the low quarter. Is there a seasonal pattern in fraudulent billing behaviour?",
+    "ObservedValue": 0.3822,
+    "BaselineValue": 0.3812,
+    "DeviationRatio": 1.007,
+    "AffectedEntities": [
+      "Q2"
+    ],
+    "AffectedCount": 144743,
+    "AnalyticalMetric": "QuarterlyFraudRate",
+    "ComparisonBaseline": "Annual average fraud rate",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.336,
+    "DataSources": [
+      "claims_sql",
+      "analytics_warehouse",
+      "provider_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "TimeWindow",
+      "Claim",
+      "Provider"
+    ],
+    "RelationPaths": [
+      "(C:Claim)-[during:occurredDuring]-(TW:TimeWindow)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+    ]
+  },
+  {
+    "FindingID": "F03",
+    "FindingType": "PhysicianNetworkFraudCorrelation",
+    "AggregationLevel": "ProviderGroup",
+    "EntityType": "Physician",
+    "FindingDescription": "Providers with 11-50 unique attending physicians show a fraud rate of 14.0% \u2014 9.3x higher than single-physician providers (1.5%). Does physician network size predict organised fraud rings where multiple physicians share billing across providers?",
+    "ObservedValue": 0.1403,
+    "BaselineValue": 0.0152,
+    "DeviationRatio": 9.26,
+    "AffectedEntities": [
+      "providers_11_to_50_physicians"
+    ],
+    "AffectedCount": 1732,
+    "AnalyticalMetric": "FraudRateByPhysicianCount",
+    "ComparisonBaseline": "Single-physician provider fraud rate",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Multi-hop",
+    "ConfidenceScore": 1.0,
+    "DataSources": [
+      "physician_nosql",
+      "provider_sql",
+      "claims_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "Physician",
+      "Provider",
+      "Claim"
+    ],
+    "RelationPaths": [
+      "(PH:Physician)-[worksFor:worksForProvider]-(P:Provider)",
+      "(C:Claim)-[treated:treatedBy]-(PH:Physician)"
+    ]
+  },
+  {
+    "FindingID": "F04",
+    "FindingType": "ReimbursementBimodality",
+    "AggregationLevel": "ClaimDistribution",
+    "EntityType": "OutpatientClaim",
+    "FindingDescription": "Outpatient claim reimbursements show a bimodal distribution: 68.3% of claims cluster below $200 and 7.0% exceed $1,000. The high-value cluster (>$1,000) has a fraud rate of 36.5% vs 36.6% in the low cluster. What explains this bimodal separation and why does the high-value cluster have elevated fraud association?",
+    "ObservedValue": 0.3646,
+    "BaselineValue": 0.3659,
+    "DeviationRatio": 0.996,
+    "AffectedEntities": [
+      "outpatient_high_value_cluster"
+    ],
+    "AffectedCount": 35991,
+    "AnalyticalMetric": "OutpatientReimbursementDistribution",
+    "ComparisonBaseline": "Low-value outpatient cluster fraud rate",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.78,
+    "DataSources": [
+      "claims_sql",
+      "beneficiary_sql",
+      "provider_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "OutpatientClaim",
+      "Claim",
+      "Provider"
+    ],
+    "RelationPaths": [
+      "(OC:OutpatientClaim)-[isA:isTypeOf]-(C:Claim)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+    ]
+  },
+  {
+    "FindingID": "F05",
+    "FindingType": "ChronicConditionMismatch",
+    "AggregationLevel": "PatientPopulation",
+    "EntityType": "Beneficiary",
+    "FindingDescription": "Fraud-flagged provider claims are submitted for patients with an average of 17.46 chronic conditions, compared to 17.53 for non-fraud providers (p=0.0000, t-test). 0.0% of fraud claims involve patients with zero recorded chronic conditions. Are fraud providers systematically billing expensive procedures for patients whose medical profiles do not justify them?",
+    "ObservedValue": 17.4577,
+    "BaselineValue": 17.5283,
+    "DeviationRatio": 0.996,
+    "AffectedEntities": [
+      "fraud_provider_patient_population"
+    ],
+    "AffectedCount": 0,
+    "AnalyticalMetric": "AvgChronicConditionCount",
+    "ComparisonBaseline": "Non-fraud provider patient chronic condition avg",
+    "StatisticalTest": {
+      "t_stat": -10.97,
+      "p_value": 0.0
+    },
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.82,
+    "DataSources": [
+      "beneficiary_sql",
+      "claims_sql",
+      "provider_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "Beneficiary",
+      "Claim",
+      "Provider",
+      "DiagnosisCode"
+    ],
+    "RelationPaths": [
+      "(B:Beneficiary)-[has:hasChronicCondition]-(D:DiagnosisCode)",
+      "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+    ]
+  },
+  {
+    "FindingID": "F06",
+    "FindingType": "ShortAdmissionHighReimbursement",
+    "AggregationLevel": "InpatientClaimGroup",
+    "EntityType": "InpatientClaim",
+    "FindingDescription": "12.8% of inpatient claims have admission duration of 0-1 days yet average reimbursement of $7,166 \u2014 compared to $10,518 for longer stays. Short-stay claims have a fraud rate of 59.2% vs 57.6% for longer stays. Are providers billing inpatient-level reimbursements for effectively outpatient procedures?",
+    "ObservedValue": 0.5922,
+    "BaselineValue": 0.5761,
+    "DeviationRatio": 1.028,
+    "AffectedEntities": [
+      "inpatient_short_stay_0_1_days"
+    ],
+    "AffectedCount": 5196,
+    "AnalyticalMetric": "AdmissionDurationVsReimbursement",
+    "ComparisonBaseline": "Long-stay inpatient fraud rate",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.8,
+    "DataSources": [
+      "claims_sql",
+      "provider_sql",
+      "beneficiary_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "InpatientClaim",
+      "Claim",
+      "Provider"
+    ],
+    "RelationPaths": [
+      "(IC:InpatientClaim)-[isA:isTypeOf]-(C:Claim)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+    ]
+  },
+  {
+    "FindingID": "F07",
+    "FindingType": "PeerGroupReimbursementDeviation",
+    "AggregationLevel": "ProviderGroup",
+    "EntityType": "Provider",
+    "FindingDescription": "Providers in the top 5% of reimbursement vs state peer median bill on average 53.5x their state peers and show a fraud rate of 72.3% \u2014 compared to 6.0% for providers billing within peer norms. 271 providers identified. Does extreme peer group deviation systematically predict fraud beyond what absolute reimbursement levels reveal?",
+    "ObservedValue": 0.7232,
+    "BaselineValue": 0.0603,
+    "DeviationRatio": 11.99,
+    "AffectedEntities": [
+      "top_5pct_peer_deviation_providers"
+    ],
+    "AffectedCount": 271,
+    "AnalyticalMetric": "ReimbursementVsPeerMedian",
+    "ComparisonBaseline": "Providers within peer reimbursement norms",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.84,
+    "DataSources": [
+      "provider_sql",
+      "analytics_warehouse",
+      "claims_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "Provider",
+      "GeographicLocation",
+      "Claim"
+    ],
+    "RelationPaths": [
+      "(P:Provider)-[operates:operatesIn]-(GL:GeographicLocation)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)"
+    ]
+  },
+  {
+    "FindingID": "F08",
+    "FindingType": "DiagnosisCodeFraudConcentration",
+    "AggregationLevel": "DiagnosisCode",
+    "EntityType": "DiagnosisCode",
+    "FindingDescription": "The top 5 diagnosis codes by fraud rate show an average fraud association of 63.9% \u2014 1.7x the overall rate of 38.1%. These codes (including 44024, 55221) average $12,830 per claim. Are specific diagnosis codes being systematically exploited to justify high-reimbursement claims across fraud providers?",
+    "ObservedValue": 0.6393,
+    "BaselineValue": 0.3812,
+    "DeviationRatio": 1.677,
+    "AffectedEntities": [
+      "44024",
+      "55221",
+      "85221"
+    ],
+    "AffectedCount": 429,
+    "AnalyticalMetric": "DiagnosisCodeFraudRate",
+    "ComparisonBaseline": "Overall claim-level fraud rate",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.79,
+    "DataSources": [
+      "claims_sql",
+      "beneficiary_sql",
+      "provider_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "DiagnosisCode",
+      "Claim",
+      "Provider",
+      "Beneficiary"
+    ],
+    "RelationPaths": [
+      "(C:Claim)-[coded:hasDiagnosis]-(D:DiagnosisCode)",
+      "(B:Beneficiary)-[has:hasChronicCondition]-(D:DiagnosisCode)"
+    ]
+  },
+  {
+    "FindingID": "F09",
+    "FindingType": "ZeroDurationClaimAnomaly",
+    "AggregationLevel": "ClaimGroup",
+    "EntityType": "Claim",
+    "FindingDescription": "81.3% of all claims have a duration of 0 days (ClaimStartDt = ClaimEndDt) yet average reimbursement of $241. These zero-duration claims have a fraud rate of 36.6% vs 44.9% for claims with non-zero duration. Are zero-duration claims being used to submit high-value reimbursements for services that required no extended care?",
+    "ObservedValue": 0.3657,
+    "BaselineValue": 0.4487,
+    "DeviationRatio": 0.815,
+    "AffectedEntities": [
+      "zero_duration_claims"
+    ],
+    "AffectedCount": 453953,
+    "AnalyticalMetric": "ClaimDurationVsFraudRate",
+    "ComparisonBaseline": "Non-zero duration claim fraud rate",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Statistical",
+    "ConfidenceScore": 0.76,
+    "DataSources": [
+      "claims_sql",
+      "provider_sql"
+    ],
+    "OntologyNodesInvolved": [
+      "Claim",
+      "Provider",
+      "InpatientClaim"
+    ],
+    "RelationPaths": [
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+      "(IC:InpatientClaim)-[isA:isTypeOf]-(C:Claim)"
+    ]
+  },
+  {
+    "FindingID": "F10",
+    "FindingType": "MultiProviderFraudPatientPattern",
+    "AggregationLevel": "PatientProviderNetwork",
+    "EntityType": "Beneficiary",
+    "FindingDescription": "3,837 beneficiaries (2.77% of all patients) are treated by 3 or more providers that are ALL fraud-flagged. These patients have an average total reimbursement of $7,359 across their fraud provider visits. Are certain patients being used as shared billing vehicles across a coordinated fraud provider network?",
+    "ObservedValue": 2.7693,
+    "BaselineValue": 0.0,
+    "DeviationRatio": 7.381,
+    "AffectedEntities": [
+      "beneficiaries_in_multi_fraud_provider_network"
+    ],
+    "AffectedCount": 3837,
+    "AnalyticalMetric": "BeneficiaryFraudProviderCount",
+    "ComparisonBaseline": "Average per-claim reimbursement",
+    "GroundTruthLabel": 1,
+    "VerificationMethod": "Multi-hop",
+    "ConfidenceScore": 0.83,
+    "DataSources": [
+      "beneficiary_sql",
+      "claims_sql",
+      "provider_sql",
+      "physician_nosql"
+    ],
+    "OntologyNodesInvolved": [
+      "Beneficiary",
+      "Claim",
+      "Provider",
+      "Physician"
+    ],
+    "RelationPaths": [
+      "(B:Beneficiary)-[has:hasClaim]-(C:Claim)",
+      "(P:Provider)-[submits:submitsClaim]-(C:Claim)",
+      "(PH:Physician)-[worksFor:worksForProvider]-(P:Provider)"
+    ]
+  }
+]
