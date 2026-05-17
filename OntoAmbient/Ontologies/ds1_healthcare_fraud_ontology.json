@@ -5,12 +5,12 @@
   "dataset": "DS1",
   "source": "https://www.kaggle.com/datasets/rohitrox/healthcare-provider-fraud-detection-analysis",
   "source_files": [
-    "Train-1542865627584.csv (Provider labels -> PotentialFraud ground truth)",
+    "Train-1542865627584.csv (Provider labels \u2014 PotentialFraud ground truth)",
     "Train_Beneficiarydata-1542865627584.csv (Patient demographics + chronic conditions)",
     "Train_Inpatientdata-1542865627584.csv (Hospital admission claims)",
     "Train_Outpatientdata-1542865627584.csv (Outpatient visit claims)"
   ],
-  "description": "Ontology for automated fraud hypothesis generation using the Kaggle Healthcare Provider Fraud Detection Analysis dataset. Covers provider-level fraud detection through analysis of inpatient claims, outpatient claims, and beneficiary demographics. The PotentialFraud column is the primary ground truth label. Multi-hop paths traverse: Provider \u2192 Claim \u2192 Beneficiary \u2192 ChronicCondition \u2192 DiagnosisCode \u2192 ProcedureCode \u2192 Physician \u2192 GeographicLocation \u2192 TimeWindow.",
+  "description": "Ontology for automated fraud hypothesis generation using the Kaggle Healthcare Provider Fraud Detection Analysis dataset. Covers provider-level fraud detection through analysis of inpatient claims, outpatient claims, and beneficiary demographics. The PotentialFraud column is the primary ground truth label. Multi-hop paths traverse: Provider -> Claim -> Beneficiary -> ChronicCondition -> DiagnosisCode -> ProcedureCode -> Physician -> GeographicLocation -> TimeWindow.",
   "nodes": {
     "Provider": {
       "datasource": {
@@ -373,11 +373,11 @@
       }
     ],
     "multi_hop_example_paths": [
-      "Provider \u2192 Claim \u2192 Beneficiary \u2192 ChronicCondition (4 hops): Are high-reimbursement providers billing patients whose chronic conditions do not justify the procedures?",
-      "Provider \u2192 Claim \u2192 Physician \u2192 Provider (4 hops): Are the same physicians appearing across multiple fraud-flagged providers \u2014 indicating an organized network?",
-      "Provider \u2192 Claim \u2192 DiagnosisCode \u2192 ProcedureCode (4 hops): Are providers billing high-reimbursement procedures for diagnoses that do not typically require them?",
-      "Beneficiary \u2192 Claim \u2192 TimeWindow \u2192 Provider (4 hops): Are deceased patients' claims being submitted after DOD, and which providers are responsible?",
-      "Provider \u2192 GeographicLocation \u2192 Provider \u2192 Claim (4 hops): Are geographically clustered providers showing correlated fraud patterns \u2014 indicating regional fraud rings?"
+      "Provider -> Claim -> Beneficiary -> ChronicCondition (4 hops): Are high-reimbursement providers billing patients whose chronic conditions do not justify the procedures?",
+      "Provider -> Claim -> Physician -> Provider (4 hops): Are the same physicians appearing across multiple fraud-flagged providers \u2014 indicating an organized network?",
+      "Provider -> Claim -> DiagnosisCode -> ProcedureCode (4 hops): Are providers billing high-reimbursement procedures for diagnoses that do not typically require them?",
+      "Beneficiary -> Claim -> TimeWindow -> Provider (4 hops): Are deceased patients' claims being submitted after DOD, and which providers are responsible?",
+      "Provider -> GeographicLocation -> Provider -> Claim (4 hops): Are geographically clustered providers showing correlated fraud patterns \u2014 indicating regional fraud rings?"
     ]
   },
   "axioms": [
